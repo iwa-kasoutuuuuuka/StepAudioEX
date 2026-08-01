@@ -311,6 +311,9 @@ class Q3TTSParser:
             tags["rate"] = rate_match.group(1)
             text = re.sub(r'\[(?:speed|rate)\s*=\s*[+-]?\d+%\]', '', text, flags=re.IGNORECASE)
             
+        # Strip pause tags [pause=...] from clean_text
+        text = re.sub(r'\[pause\s*=\s*[\d\.]+\s*(?:s|ms)?\]', '', text, flags=re.IGNORECASE)
+
         # Clean up double spaces
         clean_text = re.sub(r'\s+', ' ', text).strip()
         return clean_text, tags
