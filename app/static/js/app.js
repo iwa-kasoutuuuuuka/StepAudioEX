@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <p class="voice-desc">${voice.description}</p>
-                <div style="margin-top:auto; font-size:11px; color:var(--text-dim);">
+                <div class="voice-accent">
                     <i class="ri-voiceprint-line"></i> ${voice.accent}
                 </div>
             `;
