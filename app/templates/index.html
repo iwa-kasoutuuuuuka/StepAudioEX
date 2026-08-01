@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StepAudioEX Studio | Q3-TTS & Step Audio EditX Suite</title>
+    <!-- Icons & Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .spin { animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand-header">
+                <div class="brand-logo-icon">
+                    <i class="ri-sound-module-fill"></i>
+                </div>
+                <div>
+                    <h1 class="brand-title">StepAudioEX</h1>
+                    <div class="brand-subtitle">Q3-TTS & EditX Engine</div>
+                </div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item active" data-tab="tts">
+                    <i class="ri-mic-line"></i>
+                    <span data-i18n="nav_tts">TTS Generator</span>
+                </li>
+                <li class="nav-item" data-tab="editx">
+                    <i class="ri-scissors-cut-line"></i>
+                    <span data-i18n="nav_editx">Step Audio EditX</span>
+                </li>
+                <li class="nav-item" data-tab="cloning">
+                    <i class="ri-user-voice-line"></i>
+                    <span data-i18n="nav_cloning">Voice Cloning</span>
+                </li>
+                <li class="nav-item" data-tab="studio">
+                    <i class="ri-clapperboard-line"></i>
+                    <span data-i18n="nav_studio">Video Script Studio</span>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="system-status-indicator">
+                    <div class="status-dot"></div>
+                    <strong style="color:var(--text-main);">Native US Engine Ready</strong>
+                </div>
+                <div>Step Audio EditX v2.0</div>
+                <div style="margin-top:4px;">48kHz High-Fidelity Audio</div>
+            </div>
+        </aside>
+
+        <!-- Main Viewport -->
+        <main class="main-viewport">
+            <!-- Header -->
+            <header class="viewport-header">
+                <div>
+                    <h2 class="page-title" data-i18n="page_title">Corporate Educational Audio Studio</h2>
+                    <p class="page-desc" data-i18n="page_desc">Native American English TTS & Text-Guided Audio Editing Engine</p>
+                </div>
+                <div style="display:flex; align-items:center; gap:16px;">
+                    <div class="lang-switch">
+                        <button class="lang-btn active" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="ja">日本語</button>
+                    </div>
+                    <div class="badge-tag" data-i18n="q3_badge">
+                        <i class="ri-sparkles-line"></i> Q3-TTS Specification Enabled
+                    </div>
+                </div>
+            </header>
+
+            <!-- TAB 1: TTS GENERATOR -->
+            <section id="tab-tts" class="tab-panel active">
+                <div class="workspace-grid">
+                    <!-- Left: Script Editor & Controls -->
+                    <div class="script-editor-container">
+                        <div class="glass-panel">
+                            <div class="panel-title" data-i18n="script_panel_title">
+                                <i class="ri-edit-2-line"></i> Script & Q3-TTS Control Markup
+                            </div>
+                            
+                            <div class="tag-toolbar">
+                                <span style="font-size:11px; color:var(--text-dim); align-self:center; font-weight:600;" data-i18n="tag_label">INSERT TAGS:</span>
+                                <button class="btn-tag" data-tag="[pause=1.0s]"><i class="ri-time-line"></i> Pause 1s</button>
+                                <button class="btn-tag" data-tag="[pause=0.5s]"><i class="ri-time-line"></i> Pause 0.5s</button>
+                                <button class="btn-tag" data-tag="[emotion=enthusiastic]"><i class="ri-emotion-happy-line"></i> Enthusiastic</button>
+                                <button class="btn-tag" data-tag="[emotion=professional]"><i class="ri-briefcase-line"></i> Professional</button>
+                                <button class="btn-tag" data-tag="[pitch=+5%]"><i class="ri-pulse-line"></i> Pitch +5%</button>
+                                <button class="btn-tag" data-tag="[speed=1.1]"><i class="ri-speed-up-line"></i> Speed 1.1x</button>
+                            </div>
+
+                            <textarea id="scriptInput" class="script-textarea" placeholder="Type your corporate training script here...">Welcome to the StepAudioEX training course on corporate security and compliance. [pause=0.8s] [emotion=enthusiastic] Today, we will explore key protocols designed to safeguard organizational data across all departments. [pause=0.5s] [emotion=professional] Please ensure you follow each instructional step carefully.</textarea>
+
+                            <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; gap: 16px; align-items: center;">
+                                    <label style="font-size: 13px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                        <input type="checkbox" id="clarityToggle" checked style="accent-color: var(--primary);">
+                                        <span data-i18n="clarity_boost_label">Corporate Clarity Boost (EQ & Highpass)</span>
+                                    </label>
+                                </div>
+                                <button id="btnGenerateTTS" class="btn-primary" data-i18n="btn_generate_tts">
+                                    <i class="ri-voiceprint-line"></i> Generate Speech (Q3-TTS)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Audio Waveform & Player -->
+                        <div class="glass-panel waveform-card">
+                            <div class="panel-title" style="margin-bottom:8px;" data-i18n="waveform_title">
+                                <i class="ri-waveform-line"></i> Interactive Audio Waveform Visualizer
+                            </div>
+                            
+                            <div class="waveform-canvas-container">
+                                <canvas id="waveformCanvas"></canvas>
+                            </div>
+
+                            <div class="player-controls-bar">
+                                <button id="playPauseBtn" class="play-pause-btn">
+                                    <i class="ri-play-fill"></i>
+                                </button>
+                                
+                                <div class="time-display">
+                                    <span id="currentTimeDisplay">0:00</span> / <span id="totalTimeDisplay">0:00</span>
+                                </div>
+
+                                <audio id="mainAudioPlayer" style="display: none;"></audio>
+
+                                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <span style="font-size:12px; color:var(--text-muted);" data-i18n="label_prefix">Prefix:</span>
+                                        <input type="text" id="prefixInput" class="form-input" style="width:90px; padding:4px 8px; font-size:12px;" value="Speech" placeholder="e.g. Lesson1">
+                                    </div>
+                                    <button id="btnGenerateSplit" class="btn-secondary" data-i18n="btn_generate_split">
+                                        <i class="ri-file-zip-line"></i> Split WAV per Line (ZIP)
+                                    </button>
+                                    <button id="btnVerifyAudio" class="btn-secondary" style="border-color:var(--primary);" data-i18n="btn_verify_audio">
+                                        <i class="ri-search-eye-line"></i> Verify Audio & Text Match
+                                    </button>
+                                    <a id="btnDownloadWav" class="btn-secondary" href="#" download data-i18n="btn_download_wav">
+                                        <i class="ri-download-line"></i> Download WAV
+                                    </a>
+                                    <button id="btnDownloadSrt" class="btn-secondary" data-i18n="btn_export_srt">
+                                        <i class="ri-subtitles-line"></i> Export SRT
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Audio Verification & Subtitle Preview -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                            <!-- Verification Card -->
+                            <div class="glass-panel">
+                                <div class="panel-title" data-i18n="verify_card_title">
+                                    <i class="ri-checkbox-circle-line"></i> Audio Accuracy & Text Verification
+                                </div>
+                                <div id="verifyResultBox" style="font-size:13px; color:var(--text-muted); min-height:80px;">
+                                    <p data-i18n="verify_placeholder">Click 'Verify Audio & Text Match' after speech generation to perform speech alignment verification.</p>
+                                </div>
+                            </div>
+
+                            <!-- Subtitle Caption Preview -->
+                            <div class="glass-panel">
+                                <div class="panel-title" data-i18n="srt_title">
+                                    <i class="ri-subtitles-line"></i> Auto-Generated SRT Subtitles
+                                </div>
+                                <div id="srtPreview" class="srt-preview-box" data-i18n="srt_placeholder">Captions will appear here after synthesis...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Sidebar: Voice Selector & Parameters -->
+                    <div style="display:flex; flex-direction:column; gap:20px;">
+                        <div class="glass-panel">
+                            <div class="panel-title" data-i18n="voice_select_title">
+                                <i class="ri-user-star-line"></i> Voice Selection
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" data-i18n="label_active_preset">Active Preset</label>
+                                <select id="voiceSelect" class="form-select"></select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <span data-i18n="label_pitch_shift">Pitch Shift</span>
+                                    <span id="pitchVal" class="range-val">+0%</span>
+                                </label>
+                                <div class="range-slider-group">
+                                    <input type="range" id="pitchSlider" class="form-range" min="-20" max="20" value="0">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <span data-i18n="label_speech_rate">Speech Rate</span>
+                                    <span id="rateVal" class="range-val">+0%</span>
+                                </label>
+                                <div class="range-slider-group">
+                                    <input type="range" id="rateSlider" class="form-range" min="-30" max="40" value="0">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" data-i18n="label_emotion">Emotion Tone</label>
+                                <select id="emotionSelect" class="form-select">
+                                    <option value="professional">Professional (Default Corporate)</option>
+                                    <option value="enthusiastic">Enthusiastic & Engaging</option>
+                                    <option value="serious">Serious & Executive</option>
+                                    <option value="calm">Calm & Reassuring</option>
+                                    <option value="conversational">Conversational</option>
+                                    <option value="soft">Soft & Instructive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel">
+                            <div class="panel-title" data-i18n="voice_library_title">
+                                <i class="ri-mic-2-line"></i> Native US Voice Library
+                            </div>
+                            <div id="voicesGrid" class="voices-grid"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: STEP AUDIO EDITX -->
+            <section id="tab-editx" class="tab-panel">
+                <div class="glass-panel">
+                    <div class="panel-title" data-i18n="editx_title">
+                        <i class="ri-scissors-cut-line"></i> Step Audio EditX Processing Suite
+                    </div>
+                    <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;" data-i18n="editx_desc">
+                        Perform text-guided audio segment editing, pitch contouring, pause insertion, speed scaling, and noise reduction directly on audio waveforms.
+                    </p>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="label_target_file">Target Audio File</label>
+                            <input type="text" id="editXFileRef" class="form-input" readonly placeholder="No file selected (Generate speech first)">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="label_editx_op">EditX Operation</label>
+                            <select id="editXActionSelect" class="form-select">
+                                <option value="replace_segment" data-i18n="op_replace">Text-Guided Segment Replacement</option>
+                                <option value="insert_pause" data-i18n="op_pause">Insert Silent Pause</option>
+                                <option value="pitch_shift" data-i18n="op_pitch">Pitch Shift (Semitones)</option>
+                                <option value="speed_stretch" data-i18n="op_speed">Time-Stretch / Speed Ramp</option>
+                                <option value="enhance" data-i18n="op_enhance">Corporate Audio Enhance & Denoise</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Parameters for EditX -->
+                    <div id="editXParamsBox" style="background:rgba(10,14,24,0.6); padding:20px; border-radius:var(--radius-md); border:1px solid var(--border-glass); margin-bottom:20px;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" data-i18n="label_start_time">Start Time (seconds)</label>
+                                <input type="number" step="0.1" id="editXStartSec" class="form-input" value="1.0">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" data-i18n="label_end_time">End Time (seconds)</label>
+                                <input type="number" step="0.1" id="editXEndSec" class="form-input" value="3.0">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="label_replacement_text">Replacement Text (for Segment Replacement)</label>
+                            <input type="text" id="editXReplaceText" class="form-input" placeholder="Enter replacement text phrase to synthesize and stitch...">
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" data-i18n="label_pause_dur">Pause Duration (sec)</label>
+                                <input type="number" step="0.1" id="editXDur" class="form-input" value="1.0">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" data-i18n="label_pitch_shift_semi">Pitch Shift (Semitones)</label>
+                                <input type="number" step="0.5" id="editXSemitones" class="form-input" value="2.0">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" data-i18n="label_speed_mult">Speed Multiplier</label>
+                                <input type="number" step="0.05" id="editXSpeedRate" class="form-input" value="1.15">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="btnApplyEditX" class="btn-primary" data-i18n="btn_apply_editx">
+                        <i class="ri-magic-line"></i> Apply Step Audio EditX
+                    </button>
+                </div>
+            </section>
+
+            <!-- TAB 3: VOICE CLONING -->
+            <section id="tab-cloning" class="tab-panel">
+                <div class="glass-panel">
+                    <div class="panel-title" data-i18n="cloning_title">
+                        <i class="ri-user-voice-line"></i> Zero-Shot Voice Cloning Studio
+                    </div>
+                    <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;" data-i18n="cloning_desc">
+                        Upload a 10-30 second clean audio recording of an American English speaker to extract zero-shot acoustic features and add to your corporate voice library.
+                    </p>
+
+                    <form id="cloneForm" style="display:flex; flex-direction:column; gap:20px;">
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="label_voice_name">Voice Name / Speaker Title</label>
+                            <input type="text" id="cloneNameInput" class="form-input" placeholder="e.g. Dr. Robert Vance - VP Training" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="label_ref_audio">Reference Audio File (.wav or .mp3)</label>
+                            <input type="file" id="cloneAudioInput" class="form-input" accept="audio/*" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="label_ref_transcript">Reference Prompt Transcript (Optional)</label>
+                            <textarea id="cloneTranscriptInput" class="script-textarea" style="height:80px;" placeholder="Optional text corresponding to the sample audio for exact prompt matching..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-primary" style="align-self:flex-start;" data-i18n="btn_register_clone">
+                            <i class="ri-cpu-line"></i> Register Cloned Voice Profile
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- TAB 4: VIDEO SCRIPT STUDIO -->
+            <section id="tab-studio" class="tab-panel">
+                <div class="glass-panel">
+                    <div class="panel-title" style="justify-content:space-between;">
+                        <span data-i18n="studio_title"><i class="ri-clapperboard-line"></i> Multi-Scene Video Script Timeline Studio</span>
+                        <button id="btnAddScene" class="btn-secondary" data-i18n="btn_add_scene">
+                            <i class="ri-add-line"></i> Add Scene
+                        </button>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:24px;">
+                        <label class="form-label" data-i18n="label_proj_title">Project Title</label>
+                        <input type="text" id="studioProjName" class="form-input" value="Corporate_Onboarding_Course">
+                    </div>
+
+                    <div id="scenesContainer" class="scene-list"></div>
+
+                    <div style="margin-top:24px; display:flex; justify-content:flex-end;">
+                        <button id="btnRenderStudio" class="btn-primary" data-i18n="btn_render_studio">
+                            <i class="ri-film-line"></i> Render Complete Corporate Narration
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Application Controller JS -->
+    <script src="/static/js/audio_waveform.js"></script>
+    <script src="/static/js/app.js?v=2.0.1"></script>
+</body>
+</html>
