@@ -63,7 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
             btn_generate_split: '<i class="ri-file-zip-line"></i> Split WAV per Line (ZIP)',
             btn_verify_audio: '<i class="ri-search-eye-line"></i> Verify Audio & Text Match',
             verify_card_title: '<i class="ri-checkbox-circle-line"></i> Audio Accuracy & Text Verification',
-            verify_placeholder: "Click 'Verify Audio & Text Match' after speech generation to perform speech alignment verification."
+            verify_placeholder: "Click 'Verify Audio & Text Match' after speech generation to perform speech alignment verification.",
+            filter_all: "All Voices",
+            filter_female: "Female Voices",
+            filter_male: "Male Voices",
+            filter_clone: "Custom Cloned"
         },
         ja: {
             page_title: "企業・教育向け 英語音声合成＆編集スタジオ",
@@ -127,7 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
             btn_generate_split: '<i class="ri-file-zip-line"></i> 改行ごとに分割WAV出力 (ZIP)',
             btn_verify_audio: '<i class="ri-search-eye-line"></i> 音声精度・原稿照合テスト',
             verify_card_title: '<i class="ri-checkbox-circle-line"></i> 音声精度 ＆ 原稿一致照合診断',
-            verify_placeholder: "音声を生成後「音声精度・原稿照合テスト」をクリックすると、原稿と音声の精度検品が行われます。"
+            verify_placeholder: "音声を生成後「音声精度・原稿照合テスト」をクリックすると、原稿と音声の精度検品が行われます。",
+            filter_all: "すべての音声",
+            filter_female: "女性ナレーター",
+            filter_male: "男性ナレーター",
+            filter_clone: "オリジナル (クローン)"
         }
     };
 
@@ -644,11 +652,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    let currentFilter = 'all';
+
+    const filterBtns = document.querySelectorAll('.voice-filter-bar .btn-filter');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.getAttribute('data-filter') || 'all';
+            renderVoicesGrid(availableVoices);
+        });
+    });
+
     function renderVoicesGrid(voices) {
         if (!voicesGrid) return;
         voicesGrid.innerHTML = '';
 
-        voices.forEach(voice => {
+        const filtered = voices.filter(voice => {
+            const isClone = voice.id && voice.id.indexOf('clone_') === 0;
+            const gender = (voice.gender || '').toLowerCase();
+            if (currentFilter === 'female') return !isClone && gender === 'female';
+            if (currentFilter === 'male') return !isClone && gender === 'male';
+            if (currentFilter === 'clone') return isClone;
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            voicesGrid.innerHTML = `<div style="padding:16px; text-align:center; font-size:12px; color:var(--text-muted);">${currentLang === 'ja' ? '該当する音声がありません' : 'No voices matched'}</div>`;
+            return;
+        }
+
+        filtered.forEach(voice => {
             const isClone = voice.id && voice.id.indexOf('clone_') === 0;
             const card = document.createElement('div');
             card.className = `voice-card ${voice.id === currentVoiceId ? 'selected' : ''}`;
