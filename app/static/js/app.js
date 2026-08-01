@@ -759,13 +759,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!voiceSelect) return;
         voiceSelect.innerHTML = '';
 
-        voices.forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = v.id;
-            opt.textContent = v.name;
-            if (v.id === currentVoiceId) opt.selected = true;
-            voiceSelect.appendChild(opt);
-        });
+        const usVoices = voices.filter(v => (v.id.startsWith('en-US') || (v.accent || '').includes('US')));
+        const cloneVoices = voices.filter(v => v.id.startsWith('clone_'));
+        const globalVoices = voices.filter(v => !usVoices.includes(v) && !cloneVoices.includes(v));
+
+        const addGroup = (label, items) => {
+            if (!items.length) return;
+            const group = document.createElement('optgroup');
+            group.label = label;
+            items.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.id;
+                opt.textContent = v.name;
+                if (v.id === currentVoiceId) opt.selected = true;
+                group.appendChild(opt);
+            });
+            voiceSelect.appendChild(group);
+        };
+
+        addGroup(currentLang === 'ja' ? "🇺🇸 アメリカ英語 (Native US)" : "🇺🇸 Native US English", usVoices);
+        addGroup(currentLang === 'ja' ? "🎙️ クローン音声 (Custom Cloned)" : "🎙️ Custom Cloned Voices", cloneVoices);
+        addGroup(currentLang === 'ja' ? "🌐 グローバル英語 (UK / AU / CA / IE / NZ)" : "🌐 Global English (UK / AU / CA / IE / NZ)", globalVoices);
 
         voiceSelect.addEventListener('change', (e) => {
             currentVoiceId = e.target.value;
