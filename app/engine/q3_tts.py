@@ -84,6 +84,60 @@ class Q3TTSParser:
             "description": "Vibrant, dynamic voice for marketing presentations, product tours, and quick guides.",
             "accent": "Native US (Standard American)",
             "styles": ["enthusiastic", "conversational"]
+        },
+        {
+            "id": "en-US-ChristopherNeural",
+            "name": "Christopher - News & Documentary (Male)",
+            "gender": "Male",
+            "category": "Narration & Broadcast",
+            "description": "Deep, resonant, and articulate voice tailored for audiobooks, documentaries, and news.",
+            "accent": "Native US (General American)",
+            "styles": ["professional", "serious", "calm"]
+        },
+        {
+            "id": "en-US-EricNeural",
+            "name": "Eric - Casual & Friendly (Male)",
+            "gender": "Male",
+            "category": "Casual & Lifestyle",
+            "description": "Relaxed, natural, and conversational tone ideal for podcasts and friendly tutorials.",
+            "accent": "Native US (General American)",
+            "styles": ["conversational", "enthusiastic"]
+        },
+        {
+            "id": "en-US-MichelleNeural",
+            "name": "Michelle - Warm Specialist (Female)",
+            "gender": "Female",
+            "category": "Corporate E-Learning",
+            "description": "Soft, empathetic, and highly clear voice perfect for healthcare and customer training.",
+            "accent": "Native US (Southern / General)",
+            "styles": ["soft", "calm", "conversational"]
+        },
+        {
+            "id": "en-US-AnaNeural",
+            "name": "Ana - Youth & K-12 Educator (Female)",
+            "gender": "Female",
+            "category": "K-12 & Youth Education",
+            "description": "Bright, clear, and energetic voice designed for primary education and children's content.",
+            "accent": "Native US (Standard American)",
+            "styles": ["enthusiastic", "conversational"]
+        },
+        {
+            "id": "en-US-RogerNeural",
+            "name": "Roger - Broadcast Journalist (Male)",
+            "gender": "Male",
+            "category": "Executive & Broadcast",
+            "description": "Crisp, authoritative, and formal tone for news announcements and corporate podcasts.",
+            "accent": "Native US (Mid-Atlantic)",
+            "styles": ["professional", "serious"]
+        },
+        {
+            "id": "en-US-SteffanNeural",
+            "name": "Steffan - Friendly Narrator (Male)",
+            "gender": "Male",
+            "category": "Training & Guides",
+            "description": "Smooth, approachable male voice suitable for long-form audiobooks and step-by-step guides.",
+            "accent": "Native US (General American)",
+            "styles": ["conversational", "calm"]
         }
     ]
 

@@ -10,13 +10,20 @@
    - **ダブルクリック起動**: `start_server.bat` を実行するだけで環境構築・サーバー起動・ブラウザ自動オープンまで一括完了。
    - **バイリンガルUI**: 画面右上の切替トグルで画面全体の「日本語 ↔ English」表記をワンクリック切替可能。
 
-2. **企業・教育動画向け ネイティブ・アメリカ英語 プリセット**
+2. **企業・教育動画向け ネイティブ・アメリカ英語 プリセット (全13種類)**
    - **Ava (Training Specialist)**: 明瞭で親しみやすく、社内研修やeラーニングに最適
    - **Andrew (Executive Presenter)**: 役員プレゼンやコンプライアンス等、威厳と明瞭さを備えたトーン
    - **Brian (Tech Instructor)**: IT・システム操作ガイドや製品チュートリアルに最適なテンポ
    - **Emma (Onboarding Coach)**: 温かみのある新入社員オンボーディング・インストラクション向け
    - **Guy (Senior Instructor)**: 長編教育コンテンツ向けの落ち着いたトーン
-   - **Jenny (Compliance)** & **Aria (Product Walkthrough)**
+   - **Jenny (HR & Compliance)**: 規約・安全講習向けの落ち着いたトーン
+   - **Aria (Product Walkthrough)**: 製品デモやプロモーション向けの明るいトーン
+   - **Christopher (News & Documentary)**: ナレーション・朗読・ニュースに最適な深みのある男性声
+   - **Eric (Casual & Friendly)**: ポッドキャストやフレンドリーな解説向け
+   - **Michelle (Warm Specialist)**: 医療・カスタマーサクセス・学習者向け温かみのある女性声
+   - **Ana (Youth & K-12 Educator)**: 初等教育・子供向け教材に最適
+   - **Roger (Broadcast Journalist)**: 報道ニュース・エグゼクティブアナウンス向け
+   - **Steffan (Friendly Narrator)**: オーディオブックや長文ガイド向けナレーター
 
 3. **改行ごと分割WAV出力 ＆ カスタムファイル名命名規則 (ZIPエクスポート)**
    - 複数行の文章を入力した際、改行ごとに個別のWAVファイルを自動生成。
