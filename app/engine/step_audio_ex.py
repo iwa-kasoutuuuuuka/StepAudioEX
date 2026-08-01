@@ -11,11 +11,13 @@ from typing import Dict, Any, List, Tuple
 from app.engine.q3_tts import Q3TTSParser
 from app.engine.edit_x import StepAudioEditX
 from app.engine.voice_cloning import VoiceCloningEngine
+from app.engine.local_tts_engine import LocalTTSEngine
 
 class StepAudioEXEngine:
     """
     Master StepAudioEX Synthesis Engine.
     Combines Q3-TTS specs with Step Audio EditX processing & Voice Cloning capabilities.
+    Supports both Cloud Neural Engine and 100% Offline Local Engine modes.
     """
     def __init__(self, output_dir: str = "data/outputs"):
         self.output_dir = output_dir
@@ -23,6 +25,7 @@ class StepAudioEXEngine:
         self.q3_parser = Q3TTSParser()
         self.edit_x = StepAudioEditX()
         self.cloner = VoiceCloningEngine()
+        self.local_engine = LocalTTSEngine()
 
     async def generate_speech_async(
         self,
@@ -32,7 +35,8 @@ class StepAudioEXEngine:
         rate: str = "+0%",
         volume: str = "+0%",
         emotion: str = "professional",
-        clarity_boost: bool = True
+        clarity_boost: bool = True,
+        engine_mode: str = "cloud"
     ) -> Tuple[Any, int, List[Dict[str, Any]]]:
         """
         Synthesizes speech asynchronously using neural synthesis with Q3-TTS parameters.
@@ -41,6 +45,12 @@ class StepAudioEXEngine:
         clean_text, tags = self.q3_parser.extract_tags(text)
         if not clean_text:
             return np.zeros(24000, dtype=np.float32), 24000, []
+
+        if engine_mode == "local":
+            audio_data, samplerate, timestamps = self.local_engine.synthesize(clean_text)
+            if clarity_boost:
+                audio_data = self.edit_x.enhance_corporate_audio(audio_data, samplerate)
+            return audio_data, samplerate, timestamps
 
         # Override tags if explicitly supplied
         effective_pitch = pitch if pitch != "+0%" else tags["pitch"]
@@ -117,7 +127,8 @@ class StepAudioEXEngine:
         rate: str = "+0%",
         volume: str = "+0%",
         emotion: str = "professional",
-        clarity_boost: bool = True
+        clarity_boost: bool = True,
+        engine_mode: str = "cloud"
     ) -> Dict[str, Any]:
         """
         Processes full script with Q3-TTS pause tags and segment stitching asynchronously.
@@ -137,7 +148,7 @@ class StepAudioEXEngine:
             elif seg["type"] == "text":
                 txt = seg["content"]
                 chunk_audio, sr, ts = await self.generate_speech_async(
-                    txt, voice_id, pitch, rate, volume, emotion, clarity_boost
+                    txt, voice_id, pitch, rate, volume, emotion, clarity_boost, engine_mode
                 )
                 final_sr = sr
                 audio_chunks.append(chunk_audio)

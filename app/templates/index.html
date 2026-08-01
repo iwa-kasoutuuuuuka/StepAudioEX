@@ -63,7 +63,17 @@
                     <h2 class="page-title" data-i18n="page_title">Corporate Educational Audio Studio</h2>
                     <p class="page-desc" data-i18n="page_desc">Native American English TTS & Text-Guided Audio Editing Engine</p>
                 </div>
-                <div style="display:flex; align-items:center; gap:16px;">
+                <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                    <!-- Engine Mode Toggle -->
+                    <div class="engine-mode-switch" style="display:flex; background:rgba(10, 14, 24, 0.7); border:1px solid var(--border-glass); border-radius:var(--radius-full); padding:3px;">
+                        <button class="engine-btn active" data-mode="cloud" style="border:none; background:var(--primary-gradient); color:#040914; border-radius:var(--radius-full); padding:4px 12px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                            <i class="ri-global-line"></i> <span data-i18n="mode_cloud">🌐 クラウド高速</span>
+                        </button>
+                        <button class="engine-btn" data-mode="local" style="border:none; background:transparent; color:var(--text-muted); border-radius:var(--radius-full); padding:4px 12px; font-size:11px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                            <i class="ri-computer-line"></i> <span data-i18n="mode_local">🏠 完全ローカル (オフライン)</span>
+                        </button>
+                    </div>
+
                     <div class="lang-switch">
                         <button class="lang-btn active" data-lang="en">EN</button>
                         <button class="lang-btn" data-lang="ja">日本語</button>
@@ -371,6 +381,6 @@
 
     <!-- Application Controller JS -->
     <script src="/static/js/audio_waveform.js"></script>
-    <script src="/static/js/app.js?v=2.0.8"></script>
+    <script src="/static/js/app.js?v=2.0.9"></script>
 </body>
 </html>

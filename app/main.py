@@ -52,6 +52,7 @@ class TTSRequest(BaseModel):
     emotion: str = "professional"
     clarity_boost: bool = True
     prefix: Optional[str] = "Speech"
+    engine_mode: Optional[str] = "cloud"
 
 class VerifyRequest(BaseModel):
     original_text: str
@@ -115,7 +116,8 @@ async def generate_tts(req: TTSRequest):
         rate=req.rate,
         volume=req.volume,
         emotion=req.emotion,
-        clarity_boost=req.clarity_boost
+        clarity_boost=req.clarity_boost,
+        engine_mode=req.engine_mode or "cloud"
     )
     
     return {

@@ -135,11 +135,33 @@ document.addEventListener('DOMContentLoaded', () => {
             filter_all: "すべての音声",
             filter_female: "女性ナレーター",
             filter_male: "男性ナレーター",
-            filter_clone: "オリジナル (クローン)"
+            filter_clone: "オリジナル (クローン)",
+            mode_cloud: "🌐 クラウド高速",
+            mode_local: "🏠 完全ローカル (オフライン)"
+        },
+        en: {
+            mode_cloud: "🌐 Cloud High-Speed",
+            mode_local: "🏠 Local Offline"
         }
     };
 
     let currentLang = localStorage.getItem('stepaudio_lang') || 'ja';
+    let currentEngineMode = 'cloud';
+
+    const engineBtns = document.querySelectorAll('.engine-mode-switch .engine-btn');
+    engineBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            engineBtns.forEach(b => {
+                b.classList.remove('active');
+                b.style.background = 'transparent';
+                b.style.color = 'var(--text-muted)';
+            });
+            btn.classList.add('active');
+            btn.style.background = 'var(--primary-gradient)';
+            btn.style.color = '#040914';
+            currentEngineMode = btn.getAttribute('data-mode') || 'cloud';
+        });
+    });
 
     function setLanguage(lang) {
         currentLang = lang;
@@ -293,7 +315,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     pitch: `${pitchVal >= 0 ? '+' : ''}${pitchVal}%`,
                     rate: `${rateVal >= 0 ? '+' : ''}${rateVal}%`,
                     emotion: emotionVal,
-                    clarity_boost: clarityVal
+                    clarity_boost: clarityVal,
+                    engine_mode: currentEngineMode
                 })
             });
 
