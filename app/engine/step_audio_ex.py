@@ -5,6 +5,7 @@ import os
 import io
 import time
 import uuid
+import re
 import soundfile as sf
 from typing import Dict, Any, List, Tuple
 from app.engine.q3_tts import Q3TTSParser
@@ -219,8 +220,12 @@ class StepAudioEXEngine:
         if not transcribed_text:
             transcribed_text = clean_original
 
-        orig_words = [w.strip(".,!?;:\"'()[]") for w in clean_original.split() if w.strip()]
-        trans_words = [w.strip(".,!?;:\"'()[]") for w in transcribed_text.split() if w.strip()]
+        # Add space after punctuation if missing (e.g. "AI,which" -> "AI, which")
+        padded_orig = re.sub(r'([,.:;!])([^\s0-9])', r'\1 \2', clean_original)
+        padded_trans = re.sub(r'([,.:;!])([^\s0-9])', r'\1 \2', transcribed_text)
+
+        orig_words = [re.sub(r'^[^\w]+|[^\w]+$', '', w) for w in padded_orig.split() if re.sub(r'^[^\w]+|[^\w]+$', '', w)]
+        trans_words = [re.sub(r'^[^\w]+|[^\w]+$', '', w) for w in padded_trans.split() if re.sub(r'^[^\w]+|[^\w]+$', '', w)]
 
         matcher = difflib.SequenceMatcher(None, [w.lower() for w in orig_words], [w.lower() for w in trans_words])
         similarity_ratio = round(matcher.ratio() * 100, 1)
