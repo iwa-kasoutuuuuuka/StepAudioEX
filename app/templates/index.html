@@ -186,9 +186,12 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">
+                                <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
                                     <span data-i18n="label_pitch_shift">Pitch Shift</span>
-                                    <span id="pitchVal" class="range-val">+0%</span>
+                                    <div style="display:inline-flex; align-items:center; gap:2px;">
+                                        <input type="number" id="pitchNumInput" class="range-num-input" min="-20" max="20" value="0">
+                                        <span class="range-val-unit">%</span>
+                                    </div>
                                 </label>
                                 <div class="range-slider-group">
                                     <input type="range" id="pitchSlider" class="form-range" min="-20" max="20" value="0">
@@ -196,9 +199,12 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">
+                                <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
                                     <span data-i18n="label_speech_rate">Speech Rate</span>
-                                    <span id="rateVal" class="range-val">+0%</span>
+                                    <div style="display:inline-flex; align-items:center; gap:2px;">
+                                        <input type="number" id="rateNumInput" class="range-num-input" min="-30" max="40" value="0">
+                                        <span class="range-val-unit">%</span>
+                                    </div>
                                 </label>
                                 <div class="range-slider-group">
                                     <input type="range" id="rateSlider" class="form-range" min="-30" max="40" value="0">
@@ -365,6 +371,6 @@
 
     <!-- Application Controller JS -->
     <script src="/static/js/audio_waveform.js"></script>
-    <script src="/static/js/app.js?v=2.0.7"></script>
+    <script src="/static/js/app.js?v=2.0.8"></script>
 </body>
 </html>

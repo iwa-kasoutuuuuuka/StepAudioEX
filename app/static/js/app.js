@@ -264,9 +264,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Range Sliders Value Updates
-    setupSlider('pitchSlider', 'pitchVal', '%');
-    setupSlider('rateSlider', 'rateVal', '%');
+    // Range Sliders Value Updates & Numerical Input Sync
+    setupSlider('pitchSlider', 'pitchNumInput');
+    setupSlider('rateSlider', 'rateNumInput');
 
     // Generate TTS Button Click
     btnGenerateTTS.addEventListener('click', async () => {
@@ -886,13 +886,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function setupSlider(sliderId, displayId, unit) {
+    function setupSlider(sliderId, numberInputId) {
         const slider = document.getElementById(sliderId);
-        const display = document.getElementById(displayId);
-        if (slider && display) {
+        const numInput = document.getElementById(numberInputId);
+        if (slider && numInput) {
             slider.addEventListener('input', () => {
-                const val = slider.value;
-                display.textContent = `${val >= 0 && unit === '%' ? '+' : ''}${val}${unit}`;
+                numInput.value = slider.value;
+            });
+            numInput.addEventListener('input', () => {
+                let val = parseInt(numInput.value, 10);
+                const min = parseInt(slider.min, 10);
+                const max = parseInt(slider.max, 10);
+                if (isNaN(val)) val = 0;
+                if (val < min) val = min;
+                if (val > max) val = max;
+                slider.value = val;
+            });
+            numInput.addEventListener('blur', () => {
+                let val = parseInt(numInput.value, 10);
+                const min = parseInt(slider.min, 10);
+                const max = parseInt(slider.max, 10);
+                if (isNaN(val)) val = 0;
+                val = Math.max(min, Math.min(max, val));
+                numInput.value = val;
+                slider.value = val;
             });
         }
     }
