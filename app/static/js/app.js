@@ -286,6 +286,53 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // File Drag & Drop for Script Textarea
+    const dropZone = document.getElementById('dropZone');
+    const dropOverlay = document.getElementById('dropOverlay');
+
+    if (dropZone && scriptInput) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (dropOverlay) dropOverlay.style.display = 'flex';
+                dropZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (dropOverlay) dropOverlay.style.display = 'none';
+                dropZone.classList.remove('dragover');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files && files.length > 0) {
+                const file = files[0];
+                const validExts = ['.txt', '.md', '.srt', '.vtt', '.csv', '.json', '.log'];
+                const fileName = file.name.toLowerCase();
+                const isText = validExts.some(ext => fileName.endsWith(ext)) || file.type.startsWith('text/');
+
+                if (isText) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        scriptInput.value = event.target.result;
+                        scriptInput.focus();
+                    };
+                    reader.readAsText(file, 'UTF-8');
+                } else {
+                    alert(currentLang === 'ja' ? 'テキスト形式のファイル (.txt, .md, .srt など) をドロップしてください。' : 'Please drop a text file (.txt, .md, .srt, etc.).');
+                }
+            }
+        });
+    }
+
     // Range Sliders Value Updates & Numerical Input Sync
     setupSlider('pitchSlider', 'pitchNumInput');
     setupSlider('rateSlider', 'rateNumInput');

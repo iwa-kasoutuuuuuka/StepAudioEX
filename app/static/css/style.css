@@ -348,6 +348,11 @@ body {
     box-shadow: var(--glow-primary);
 }
 
+.script-dropzone.dragover .script-textarea {
+    border-color: var(--primary);
+    box-shadow: var(--glow-primary);
+}
+
 /* Controls & Selectors */
 .form-group {
     display: flex;
