@@ -11,13 +11,12 @@
    - **バイリンガルUI**: 画面右上の切替トグルで画面全体の「日本語 ↔ English」表記をワンクリック切替可能。
    - **[🌐 クラウド高速] ↔ [🏠 完全ローカル (オフライン)] 切替**: インターネット未接続環境やセキュリティ規定の厳しい社内ネットワークでも、ローカルONNX（Piper）および LLM（Qwen2-Audio / F5-TTS / ChatTTS）プロキシエンジンにより100%ローカルPC内のみで完全オフライン音声合成が可能。
 
-2. **グローバル英語・ビジネス動画向け プリセット音声 (完全無料・商用フリー全25種類)**
+2. **グローバル英語・ビジネス動画向け プリセット音声 (完全無料・商用フリー全25種類 ＋ ローカルモデル)**
    - **米国アクセント (US)**: Ava, Andrew, Brian, Emma, Guy, Jenny, Aria, Christopher, Eric, Michelle, Ana, Roger, Steffan
    - **英国アクセント (UK / British)**: Ryan (Executive Male), Sonia (Educator Female), Libby (Storyteller Female), Thomas (Instructor Male)
-   - **オーストラリア (Australian)**: Natasha (Female), William (Male)
-   - **カナダ (Canadian)**: Clara (Female), Liam (Male)
-   - **アイルランド (Irish)**: Emily (Female), Connor (Male)
-   - **ニュージーランド (NZ)**: Molly (Female), Mitchell (Male)
+   - **オーストラリア / カナダ / アイルランド / NZ**: Natasha, William, Clara, Liam, Emily, Connor, Molly, Mitchell
+   - **ローカルモデル (Auto-Download)**: Lessac, Ryan (High Quality), LJSpeech, Amy
+   - **カテゴリ・性別フィルター**: 「すべての音声」「女性」「男性」「クローン」タブと動的件数バッジ（例: `男性 (13)`）による快適な音声検索。
 
 3. **改行ごと分割WAV出力 ＆ カスタムファイル名命名規則 (ZIPエクスポート)**
    - 複数行の文章を入力した際、改行ごとに個別のWAVファイルを自動生成。
@@ -71,12 +70,16 @@
 ### 🤝 ベースモデル・基幹技術への謝辞
 * **[Step Audio / Step Audio EditX](https://github.com/stepfun-ai/Step-Audio)** (StepFun AI)
   - テキスト指示型音声編集（Text-Guided Segment Replacement）、Zero-Shot Voice Cloning、先進的なオーディオ編集・アコースティックプロファイリング技術の設計思想および基礎フレームワークとしてインスパイア・活用させていただいております。
+* **[Rhasspy Piper Voices](https://github.com/rhasspy/piper)** (Rhasspy)
+  - 完全ローカル・オフライン音声合成エンジン用の高性能 ONNX ニューラルボイスモデル（Lessac, Ryan, LJSpeech, Amy）を提供。
 
 ### 🛠️ 利用・流用ライブラリ ＆ フレームワーク一覧
 本アプリケーションの構築にあたり、以下のオープンソースソフトウェアおよびライブラリを使用・活用しています。
 
 * **[edge-tts](https://github.com/rany2/edge-tts)**
   - Microsoft Edge のニューラル音声合成 Web API と同期し、ミリ秒単位の単語タイムスタンプ（WordBoundary）取得およびニュアンス・感情コントロールを実現。
+* **[piper-tts](https://github.com/rhasspy/piper)** & **[onnxruntime](https://onnxruntime.ai/)**
+  - 完全ローカル（オフライン）環境でのニューラル音声合成および高速推論。
 * **[FastAPI](https://fastapi.tiangolo.com/)**
   - 高速でモダンな Python Web アプリケーションバックエンド・API フレームワーク。
 * **[Uvicorn](https://www.uvicorn.org/)**
@@ -85,6 +88,8 @@
   - 48kHz / 24kHz 高音質 WAV ファイルの入出力およびメモリ上での非破壊エンコード。
 * **[SciPy](https://scipy.org/)** & **[NumPy](https://numpy.org/)**
   - 音声信号処理、ハイパスフィルター・イコライザー（Corporate Clarity Boost）、ピッチシフト・タイムストレッチの算術処理。
+* **[pathvalidate](https://github.com/thombashi/pathvalidate)**
+  - エクスポートファイル名および文字コードの安全なサニタイズ処理。
 * **[Jinja2](https://jinja.palletsprojects.com/)**
   - テンプレートレンダリングエンジン。
 * **[Remix Icon](https://remixicon.com/)**
