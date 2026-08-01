@@ -197,6 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentVoiceId = "en-US-AvaMultilingualNeural";
     let currentAudioFile = null;
     let visualizer = null;
+    let latestTimestamps = [];
+    let latestScriptText = "";
+    let lastVerificationData = null;
     let scenesList = [
         {
             id: 1,
@@ -298,6 +301,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.status === 'success') {
                 currentAudioFile = data.file_name;
+                latestScriptText = text;
+                latestTimestamps = data.timestamps || [];
                 mainAudioPlayer.src = data.audio_url;
                 mainAudioPlayer.play();
                 updatePlayPauseIcon(true);
@@ -315,6 +320,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Update EditX tab target file
                 document.getElementById('editXFileRef').value = data.file_name;
+
+                // Auto Trigger Verification Update
+                updateVerificationUI(text, latestTimestamps);
             } else {
                 alert(`Synthesis Error: ${data.detail || 'Failed'}`);
             }
@@ -385,9 +393,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    async function updateVerificationUI(originalText, timestamps) {
+        const verifyResultBox = document.getElementById('verifyResultBox');
+        if (!verifyResultBox) return;
+
+        try {
+            const verifyRes = await fetch('/api/tts/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    original_text: originalText,
+                    timestamps: timestamps || []
+                })
+            });
+
+            const vData = await verifyRes.json();
+            if (vData.status === 'success') {
+                const info = vData.verification;
+                const badgeColor = info.status === 'passed' ? '#10b981' : '#f59e0b';
+                const badgeText = info.status === 'passed' ? (currentLang === 'ja' ? '一致度 良好 (合格)' : 'High Match (Passed)') : (currentLang === 'ja' ? '一部不一致あり' : 'Diff Detected');
+
+                const diffHtml = info.diff_results.map(d => {
+                    if (d.status === 'match') return `<span style="color:#10b981;">${d.word}</span>`;
+                    if (d.status === 'replaced' || d.status === 'missing') return `<span style="color:#ef4444; text-decoration:line-through;">${d.word}</span>`;
+                    return `<span style="color:#f59e0b;">${d.word}</span>`;
+                }).join(' ');
+
+                verifyResultBox.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-size:16px; font-weight:700; color:${badgeColor};">
+                            <i class="ri-dashboard-line"></i> ${currentLang === 'ja' ? 'テキスト原稿 ↔ 音声一致度' : 'Audio Similarity'}: ${info.similarity_score}%
+                        </span>
+                        <span style="background:${badgeColor}22; border:1px solid ${badgeColor}; color:${badgeColor}; font-size:11px; padding:2px 8px; border-radius:99px; font-weight:600;">
+                            ${badgeText}
+                        </span>
+                    </div>
+                    <div style="font-size:12px; color:var(--text-dim); margin-bottom:8px;">
+                        ${currentLang === 'ja' ? `原稿単語数: ${info.word_count_original} 語 / 音声検知単語数: ${info.word_count_transcribed} 語` : `Script Words: ${info.word_count_original} / Audio Words: ${info.word_count_transcribed}`}
+                    </div>
+                    <div style="background:rgba(10,14,24,0.7); border:1px solid var(--border-glass); padding:10px; border-radius:8px; font-family:var(--font-mono); font-size:12px; line-height:1.6; max-height:100px; overflow-y:auto;">
+                        ${diffHtml}
+                    </div>
+                `;
+            }
+        } catch (e) {
+            console.error("Verification UI update error:", e);
+        }
+    }
+
     // Verify Audio Button Click
     const btnVerifyAudio = document.getElementById('btnVerifyAudio');
-    const verifyResultBox = document.getElementById('verifyResultBox');
 
     if (btnVerifyAudio) {
         btnVerifyAudio.addEventListener('click', async () => {
@@ -400,69 +455,36 @@ document.addEventListener('DOMContentLoaded', () => {
             setButtonLoading(btnVerifyAudio, true, currentLang === 'ja' ? "原稿と音声の精度照合中..." : "Verifying Speech Alignment...");
 
             try {
-                // If TTS wasn't run yet, generate timestamps first
                 const pitchVal = document.getElementById('pitchSlider').value;
                 const rateVal = document.getElementById('rateSlider').value;
                 const emotionVal = document.getElementById('emotionSelect').value;
                 const clarityVal = document.getElementById('clarityToggle').checked;
 
-                const response = await fetch('/api/tts/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        text: text,
-                        voice_id: currentVoiceId,
-                        pitch: `${pitchVal >= 0 ? '+' : ''}${pitchVal}%`,
-                        rate: `${rateVal >= 0 ? '+' : ''}${rateVal}%`,
-                        emotion: emotionVal,
-                        clarity_boost: clarityVal
-                    })
-                });
-
-                const ttsData = await response.json();
-
-                if (ttsData.status === 'success') {
-                    // Call verify API
-                    const verifyRes = await fetch('/api/tts/verify', {
+                if (latestTimestamps.length > 0 && latestScriptText === text) {
+                    await updateVerificationUI(text, latestTimestamps);
+                } else {
+                    const response = await fetch('/api/tts/generate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            original_text: text,
-                            timestamps: ttsData.timestamps || []
+                            text: text,
+                            voice_id: currentVoiceId,
+                            pitch: `${pitchVal >= 0 ? '+' : ''}${pitchVal}%`,
+                            rate: `${rateVal >= 0 ? '+' : ''}${rateVal}%`,
+                            emotion: emotionVal,
+                            clarity_boost: clarityVal
                         })
                     });
 
-                    const vData = await verifyRes.json();
-                    if (vData.status === 'success' && verifyResultBox) {
-                        const info = vData.verification;
-                        const badgeColor = info.status === 'passed' ? '#10b981' : '#f59e0b';
-                        const badgeText = info.status === 'passed' ? (currentLang === 'ja' ? '一致度 良好 (合格)' : 'High Match (Passed)') : (currentLang === 'ja' ? '一部不一致あり' : 'Diff Detected');
+                    const ttsData = await response.json();
 
-                        const diffHtml = info.diff_results.map(d => {
-                            if (d.status === 'match') return `<span style="color:#10b981;">${d.word}</span>`;
-                            if (d.status === 'replaced' || d.status === 'missing') return `<span style="color:#ef4444; text-decoration:line-through;">${d.word}</span>`;
-                            return `<span style="color:#f59e0b;">${d.word}</span>`;
-                        }).join(' ');
-
-                        verifyResultBox.innerHTML = `
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                <span style="font-size:16px; font-weight:700; color:${badgeColor};">
-                                    <i class="ri-dashboard-line"></i> ${currentLang === 'ja' ? 'テキスト原稿 ↔ 音声一致度' : 'Audio Similarity'}: ${info.similarity_score}%
-                                </span>
-                                <span style="background:${badgeColor}22; border:1px solid ${badgeColor}; color:${badgeColor}; font-size:11px; padding:2px 8px; border-radius:99px; font-weight:600;">
-                                    ${badgeText}
-                                </span>
-                            </div>
-                            <div style="font-size:12px; color:var(--text-dim); margin-bottom:8px;">
-                                ${currentLang === 'ja' ? `原稿単語数: ${info.word_count_original} 語 / 音声検知単語数: ${info.word_count_transcribed} 語` : `Script Words: ${info.word_count_original} / Audio Words: ${info.word_count_transcribed}`}
-                            </div>
-                            <div style="background:rgba(10,14,24,0.7); border:1px solid var(--border-glass); padding:10px; border-radius:8px; font-family:var(--font-mono); font-size:12px; line-height:1.6; max-height:100px; overflow-y:auto;">
-                                ${diffHtml}
-                            </div>
-                        `;
+                    if (ttsData.status === 'success') {
+                        latestScriptText = text;
+                        latestTimestamps = ttsData.timestamps || [];
+                        await updateVerificationUI(text, latestTimestamps);
+                    } else {
+                        alert(`Verification Error: ${ttsData.detail || 'Failed'}`);
                     }
-                } else {
-                    alert(`Verification Error: ${ttsData.detail || 'Failed'}`);
                 }
             } catch (e) {
                 console.error("Verification error:", e);
