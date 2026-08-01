@@ -224,10 +224,10 @@
                             </div>
                             <!-- Voice Filter Tabs -->
                             <div class="voice-filter-bar" style="display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap;">
-                                <button class="btn-filter active" data-filter="all" data-i18n="filter_all">すべての音声</button>
-                                <button class="btn-filter" data-filter="female" data-i18n="filter_female">女性ナレーター</button>
-                                <button class="btn-filter" data-filter="male" data-i18n="filter_male">男性ナレーター</button>
-                                <button class="btn-filter" data-filter="clone" data-i18n="filter_clone">オリジナル (クローン)</button>
+                                <button class="btn-filter active" data-filter="all">すべての音声 <span id="countAll"></span></button>
+                                <button class="btn-filter" data-filter="female">女性 <span id="countFemale"></span></button>
+                                <button class="btn-filter" data-filter="male">男性 <span id="countMale"></span></button>
+                                <button class="btn-filter" data-filter="clone">クローン <span id="countClone"></span></button>
                             </div>
                             <div id="voicesGrid" class="voices-grid"></div>
                         </div>
@@ -365,6 +365,6 @@
 
     <!-- Application Controller JS -->
     <script src="/static/js/audio_waveform.js"></script>
-    <script src="/static/js/app.js?v=2.0.4"></script>
+    <script src="/static/js/app.js?v=2.0.5"></script>
 </body>
 </html>

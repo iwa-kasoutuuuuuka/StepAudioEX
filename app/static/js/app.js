@@ -686,9 +686,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    function updateVoiceCounts(voices) {
+        let all = voices.length;
+        let female = 0, male = 0, clone = 0;
+        voices.forEach(v => {
+            const isClone = v.id && v.id.indexOf('clone_') === 0;
+            const gender = (v.gender || '').toLowerCase();
+            if (isClone) clone++;
+            else if (gender === 'female') female++;
+            else if (gender === 'male') male++;
+        });
+
+        const cAll = document.getElementById('countAll');
+        const cFem = document.getElementById('countFemale');
+        const cMale = document.getElementById('countMale');
+        const cClone = document.getElementById('countClone');
+
+        if (cAll) cAll.textContent = `(${all})`;
+        if (cFem) cFem.textContent = `(${female})`;
+        if (cMale) cMale.textContent = `(${male})`;
+        if (cClone) cClone.textContent = `(${clone})`;
+    }
+
     function renderVoicesGrid(voices) {
         if (!voicesGrid) return;
         voicesGrid.innerHTML = '';
+        updateVoiceCounts(voices);
 
         const filtered = voices.filter(voice => {
             const isClone = voice.id && voice.id.indexOf('clone_') === 0;
