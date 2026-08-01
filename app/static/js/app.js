@@ -711,21 +711,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateVoiceCounts(voices) {
         let all = voices.length;
-        let female = 0, male = 0, clone = 0;
+        let local = 0, female = 0, male = 0, clone = 0;
         voices.forEach(v => {
+            const isLocal = v.id && v.id.indexOf('local_') === 0;
             const isClone = v.id && v.id.indexOf('clone_') === 0;
             const gender = (v.gender || '').toLowerCase();
-            if (isClone) clone++;
+            if (isLocal) local++;
+            else if (isClone) clone++;
             else if (gender === 'female') female++;
             else if (gender === 'male') male++;
         });
 
         const cAll = document.getElementById('countAll');
+        const cLocal = document.getElementById('countLocal');
         const cFem = document.getElementById('countFemale');
         const cMale = document.getElementById('countMale');
         const cClone = document.getElementById('countClone');
 
         if (cAll) cAll.textContent = `(${all})`;
+        if (cLocal) cLocal.textContent = `(${local})`;
         if (cFem) cFem.textContent = `(${female})`;
         if (cMale) cMale.textContent = `(${male})`;
         if (cClone) cClone.textContent = `(${clone})`;
@@ -737,10 +741,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateVoiceCounts(voices);
 
         const filtered = voices.filter(voice => {
+            const isLocal = voice.id && voice.id.indexOf('local_') === 0;
             const isClone = voice.id && voice.id.indexOf('clone_') === 0;
             const gender = (voice.gender || '').toLowerCase();
-            if (currentFilter === 'female') return !isClone && gender === 'female';
-            if (currentFilter === 'male') return !isClone && gender === 'male';
+            if (currentFilter === 'local') return isLocal;
+            if (currentFilter === 'female') return !isLocal && !isClone && gender === 'female';
+            if (currentFilter === 'male') return !isLocal && !isClone && gender === 'male';
             if (currentFilter === 'clone') return isClone;
             return true;
         });
