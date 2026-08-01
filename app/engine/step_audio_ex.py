@@ -47,7 +47,7 @@ class StepAudioEXEngine:
             return np.zeros(24000, dtype=np.float32), 24000, []
 
         if engine_mode == "local":
-            audio_data, samplerate, timestamps = self.local_engine.synthesize(clean_text)
+            audio_data, samplerate, timestamps = self.local_engine.synthesize(clean_text, model_key=voice_id)
             if clarity_boost:
                 audio_data = self.edit_x.enhance_corporate_audio(audio_data, samplerate)
             return audio_data, samplerate, timestamps

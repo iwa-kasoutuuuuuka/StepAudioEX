@@ -94,13 +94,26 @@ async def read_root(request: Request):
 
 @app.get("/api/voices")
 async def get_voices():
-    """Retrieve available native American English preset voices and custom cloned voices."""
+    """Retrieve available native preset voices, local offline models, and custom cloned voices."""
     presets = q3_parser.NATIVE_US_VOICES
     clones = voice_cloner.list_cloned_voices()
+    local_models = [
+        {
+            "id": k,
+            "name": f"🏠 [Local] {v['name']}",
+            "gender": "Female" if "Female" in v["name"] else "Male",
+            "category": "Offline Local Model",
+            "description": "100% Offline ONNX Neural Voice Model (Auto-downloaded on first use).",
+            "accent": "Native US (Offline)",
+            "styles": ["professional", "conversational"]
+        }
+        for k, v in master_engine.local_engine.LOCAL_MODELS.items()
+    ]
     return {
         "status": "success",
         "native_us_voices": presets,
-        "cloned_voices": clones
+        "cloned_voices": clones,
+        "local_voices": local_models
     }
 
 @app.post("/api/tts/generate")

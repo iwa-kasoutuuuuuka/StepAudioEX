@@ -687,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/voices');
             const data = await response.json();
             if (data.status === 'success') {
-                availableVoices = [...data.native_us_voices, ...data.cloned_voices];
+                availableVoices = [...data.native_us_voices, ...(data.local_voices || []), ...data.cloned_voices];
                 renderVoicesGrid(availableVoices);
                 populateVoiceSelect(availableVoices);
                 renderScenesUI();
@@ -805,9 +805,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!voiceSelect) return;
         voiceSelect.innerHTML = '';
 
-        const usVoices = voices.filter(v => (v.id.startsWith('en-US') || (v.accent || '').includes('US')));
+        const localVoices = voices.filter(v => v.id.startsWith('local_'));
+        const usVoices = voices.filter(v => !v.id.startsWith('local_') && (v.id.startsWith('en-US') || (v.accent || '').includes('US')));
         const cloneVoices = voices.filter(v => v.id.startsWith('clone_'));
-        const globalVoices = voices.filter(v => !usVoices.includes(v) && !cloneVoices.includes(v));
+        const globalVoices = voices.filter(v => !v.id.startsWith('local_') && !usVoices.includes(v) && !cloneVoices.includes(v));
 
         const addGroup = (label, items) => {
             if (!items.length) return;
@@ -823,6 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
             voiceSelect.appendChild(group);
         };
 
+        addGroup(currentLang === 'ja' ? "🏠 オフラインローカルモデル (Auto-Download)" : "🏠 Offline Local Models (Auto-Download)", localVoices);
         addGroup(currentLang === 'ja' ? "🇺🇸 アメリカ英語 (Native US)" : "🇺🇸 Native US English", usVoices);
         addGroup(currentLang === 'ja' ? "🎙️ クローン音声 (Custom Cloned)" : "🎙️ Custom Cloned Voices", cloneVoices);
         addGroup(currentLang === 'ja' ? "🌐 グローバル英語 (UK / AU / CA / IE / NZ)" : "🌐 Global English (UK / AU / CA / IE / NZ)", globalVoices);
