@@ -80,6 +80,12 @@ class StudioRenderRequest(BaseModel):
     project_name: str
     scenes: List[SceneItem]
 
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, Response
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return Response(status_code=204)
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     """Render StepAudioEX Studio Dashboard."""
