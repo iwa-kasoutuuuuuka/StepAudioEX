@@ -56,15 +56,16 @@ class StepAudioEXEngine:
                     cloned_profile = c
                     voice_id = c.get("base_voice_id", "en-US-AvaMultilingualNeural")
                     effective_pitch = c.get("pitch_adjustment", effective_pitch)
-        # Convert pitch format (% or semitones) to Hz for edge_tts compatibility (e.g. +5% -> +5Hz, +0% -> +0Hz)
+        # Convert pitch format (% or Hz) for edge_tts compatibility (e.g. +10% -> +10Hz, +20% -> +20Hz)
         pitch_str = str(effective_pitch).strip()
         if pitch_str.endswith("%"):
-            pitch_val = pitch_str[:-1]
-            effective_pitch_formatted = f"{pitch_val}Hz" if pitch_val.startswith(("+", "-")) else f"+{pitch_val}Hz"
+            p_num = int(pitch_str[:-1])
+            effective_pitch_formatted = f"{'+' if p_num >= 0 else ''}{p_num}Hz"
         elif pitch_str.endswith("Hz"):
             effective_pitch_formatted = pitch_str
         else:
-            effective_pitch_formatted = f"+{pitch_str}Hz" if not pitch_str.startswith(("+", "-")) else f"{pitch_str}Hz"
+            p_num = int(pitch_str)
+            effective_pitch_formatted = f"{'+' if p_num >= 0 else ''}{p_num}Hz"
 
         communicate = edge_tts.Communicate(
             clean_text,
