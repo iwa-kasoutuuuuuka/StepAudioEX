@@ -138,6 +138,114 @@ class Q3TTSParser:
             "description": "Smooth, approachable male voice suitable for long-form audiobooks and step-by-step guides.",
             "accent": "Native US (General American)",
             "styles": ["conversational", "calm"]
+        },
+        {
+            "id": "en-GB-RyanNeural",
+            "name": "Ryan - British Executive (Male)",
+            "gender": "Male",
+            "category": "Global Corporate & UK",
+            "description": "Sophisticated, clear British English male voice ideal for global business and narration.",
+            "accent": "British English (RP)",
+            "styles": ["professional", "serious"]
+        },
+        {
+            "id": "en-GB-SoniaNeural",
+            "name": "Sonia - British Educator (Female)",
+            "gender": "Female",
+            "category": "Global Corporate & UK",
+            "description": "Refined, articulate British English female voice for academic and corporate e-learning.",
+            "accent": "British English (RP)",
+            "styles": ["professional", "conversational"]
+        },
+        {
+            "id": "en-GB-LibbyNeural",
+            "name": "Libby - British Storyteller (Female)",
+            "gender": "Female",
+            "category": "Global Narration",
+            "description": "Warm, expressive British female tone suitable for audiobooks and educational presentations.",
+            "accent": "British English",
+            "styles": ["soft", "calm"]
+        },
+        {
+            "id": "en-GB-ThomasNeural",
+            "name": "Thomas - British Instructor (Male)",
+            "gender": "Male",
+            "category": "Global Technical",
+            "description": "Calm, trustworthy British male speaker for technical guides and course material.",
+            "accent": "British English",
+            "styles": ["professional", "calm"]
+        },
+        {
+            "id": "en-AU-NatashaNeural",
+            "name": "Natasha - Australian Guide (Female)",
+            "gender": "Female",
+            "category": "Oceania & International",
+            "description": "Friendly, clear Australian English female speaker for global corporate training.",
+            "accent": "Australian English",
+            "styles": ["conversational", "enthusiastic"]
+        },
+        {
+            "id": "en-AU-WilliamMultilingualNeural",
+            "name": "William - Australian Presenter (Male)",
+            "gender": "Male",
+            "category": "Oceania & International",
+            "description": "Confident, approachable Australian English male narrator for business and media.",
+            "accent": "Australian English",
+            "styles": ["professional", "conversational"]
+        },
+        {
+            "id": "en-CA-ClaraNeural",
+            "name": "Clara - Canadian Specialist (Female)",
+            "gender": "Female",
+            "category": "North American Corporate",
+            "description": "Natural, clear Canadian English female voice tailored for North American modules.",
+            "accent": "Canadian English",
+            "styles": ["conversational", "professional"]
+        },
+        {
+            "id": "en-CA-LiamNeural",
+            "name": "Liam - Canadian Coach (Male)",
+            "gender": "Male",
+            "category": "North American Corporate",
+            "description": "Warm, engaging Canadian English male voice suitable for training and walkthroughs.",
+            "accent": "Canadian English",
+            "styles": ["professional", "enthusiastic"]
+        },
+        {
+            "id": "en-IE-EmilyNeural",
+            "name": "Emily - Irish Presenter (Female)",
+            "gender": "Female",
+            "category": "European & Global",
+            "description": "Melodic, charming Irish English female voice for storytelling and engaging courses.",
+            "accent": "Irish English",
+            "styles": ["conversational", "soft"]
+        },
+        {
+            "id": "en-IE-ConnorNeural",
+            "name": "Connor - Irish Instructor (Male)",
+            "gender": "Male",
+            "category": "European & Global",
+            "description": "Articulate, friendly Irish English male speaker for lectures and global content.",
+            "accent": "Irish English",
+            "styles": ["conversational", "calm"]
+        },
+        {
+            "id": "en-NZ-MollyNeural",
+            "name": "Molly - New Zealand Guide (Female)",
+            "gender": "Female",
+            "category": "Oceania & Global",
+            "description": "Distinctive, clear New Zealand English female voice for global e-learning.",
+            "accent": "New Zealand English",
+            "styles": ["conversational", "calm"]
+        },
+        {
+            "id": "en-NZ-MitchellNeural",
+            "name": "Mitchell - New Zealand Coach (Male)",
+            "gender": "Male",
+            "category": "Oceania & Global",
+            "description": "Relaxed, authentic New Zealand English male speaker for instructional videos.",
+            "accent": "New Zealand English",
+            "styles": ["professional", "conversational"]
         }
     ]
 
