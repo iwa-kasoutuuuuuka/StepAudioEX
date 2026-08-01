@@ -56,3 +56,32 @@
 .venv\Scripts\python.exe run_server.py
 ```
 
+---
+
+## 謝辞・クレジッド（Acknowledgments & Attributions）
+
+本プロジェクト **StepAudioEX** は、オープンソースコミュニティおよび先進的な研究機関・開発者の方々の素晴らしい成果と技術基盤の上に成り立っています。開発チーム・コミュニティの皆様に深く感謝と敬意を表します。
+
+### 🤝 ベースモデル・基幹技術への謝辞
+* **[Step Audio / Step Audio EditX](https://github.com/stepfun-ai/Step-Audio)** (StepFun AI)
+  - テキスト指示型音声編集（Text-Guided Segment Replacement）、Zero-Shot Voice Cloning、先進的なオーディオ編集・アコースティックプロファイリング技術の設計思想および基礎フレームワークとしてインスパイア・活用させていただいております。
+
+### 🛠️ 利用・流用ライブラリ ＆ フレームワーク一覧
+本アプリケーションの構築にあたり、以下のオープンソースソフトウェアおよびライブラリを使用・活用しています。
+
+* **[edge-tts](https://github.com/rany2/edge-tts)**
+  - Microsoft Edge のニューラル音声合成 Web API と同期し、ミリ秒単位の単語タイムスタンプ（WordBoundary）取得およびニュアンス・感情コントロールを実現。
+* **[FastAPI](https://fastapi.tiangolo.com/)**
+  - 高速でモダンな Python Web アプリケーションバックエンド・API フレームワーク。
+* **[Uvicorn](https://www.uvicorn.org/)**
+  - 非同期処理に対応した高性能 ASGI サーバー実装。
+* **[SoundFile (PySoundFile)](https://python-soundfile.readthedocs.io/)** & **[Libsndfile](https://libsndfile.github.io/libsndfile/)**
+  - 48kHz / 24kHz 高音質 WAV ファイルの入出力およびメモリ上での非破壊エンコード。
+* **[SciPy](https://scipy.org/)** & **[NumPy](https://numpy.org/)**
+  - 音声信号処理、ハイパスフィルター・イコライザー（Corporate Clarity Boost）、ピッチシフト・タイムストレッチの算術処理。
+* **[Jinja2](https://jinja.palletsprojects.com/)**
+  - テンプレートレンダリングエンジン。
+* **[Remix Icon](https://remixicon.com/)**
+  - UIで使用されている高品質オープンソースアイコンシステム。
+
+
