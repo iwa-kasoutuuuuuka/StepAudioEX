@@ -23,7 +23,8 @@
 10. [🔍 本家 Step-Audio (基盤モデル) との比較](#-本家-step-audio-基盤モデル-との比較)
 11. [⚡ アーキテクチャ・無料利用と持続可能性](#-アーキテクチャ無料利用と持続可能性)
 12. [❓ トラブルシューティング ＆ よくある質問 (FAQ)](#-トラブルシューティング--よくある質問-faq)
-13. [謝辞・クレジッド ＆ ライセンス](#謝辞クレジッド--ライセンス)
+13. [🙌 謝辞・クレジッド (Acknowledgments & Attributions)](#-謝辞クレジッド-acknowledgments--attributions)
+14. [📜 ライセンス ＆ 免責事項 (License & Disclaimer)](#-ライセンス--免責事項-license--disclaimer)
 
 ---
 
@@ -331,14 +332,42 @@ StepAudioEX サーバーが提供する主要な REST API エンドポイント�
 
 ---
 
-## 謝辞・クレジッド ＆ ライセンス
+## 🙌 謝辞・クレジッド (Acknowledgments & Attributions)
+
+本プロジェクト **StepAudioEX** は、オープンソースコミュニティおよび先進的な研究機関・開発者の方々の素晴らしい成果と技術基盤の上に成り立っています。開発チーム・コミュニティの皆様に深く感謝と敬意を表します。
 
 ### 🤝 ベースモデル・基幹技術への謝辞
 * **[Step Audio / Step Audio EditX](https://github.com/stepfun-ai/Step-Audio)** (StepFun AI)
+  - テキスト指示型音声編集（Text-Guided Segment Replacement）、Zero-Shot Voice Cloning、先進的なオーディオ編集・アコースティックプロファイリング技術の設計思想および基礎フレームワークとしてインスパイア・活用させていただいております。
 * **[Rhasspy Piper Voices](https://github.com/rhasspy/piper)** (Rhasspy)
+  - 完全ローカル・オフライン音声合成エンジン用の高性能 ONNX ニューラルボイスモデル（Lessac, Ryan, LJSpeech, Amy）を提供。
 
-### 🛠️ 利用・流用ライブラリ ＆ フレームワーク
-- `edge-tts`, `piper-tts`, `FastAPI`, `Uvicorn`, `SoundFile`, `SciPy`, `NumPy`, `pathvalidate`, `Jinja2`, `Remix Icon`
+### 🛠️ 利用・流用ライブラリ ＆ フレームワーク一覧
+本アプリケーションの構築にあたり、以下のオープンソースソフトウェアおよびライブラリを使用・活用しています。
 
-### 📜 ライセンス
-* 本リポジトリのコードおよびUI構成は **[MIT License](https://opensource.org/licenses/MIT)** の下で公開されています。
+* **[edge-tts](https://github.com/rany2/edge-tts)**
+  - Microsoft Edge のニューラル音声合成 Web API と同期し、ミリ秒単位の単語タイムスタンプ（WordBoundary）取得およびニュアンス・感情コントロールを実現。
+* **[piper-tts](https://github.com/rhasspy/piper)** & **[onnxruntime](https://onnxruntime.ai/)**
+  - 完全ローカル（オフライン）環境でのニューラル音声合成および高速推論。
+* **[FastAPI](https://fastapi.tiangolo.com/)**
+  - 高速でモダンな Python Web アプリケーションバックエンド・API フレームワーク。
+* **[Uvicorn](https://www.uvicorn.org/)**
+  - 非同期処理に対応した高性能 ASGI サーバー実装。
+* **[SoundFile (PySoundFile)](https://python-soundfile.readthedocs.io/)** & **[Libsndfile](https://libsndfile.github.io/libsndfile/)**
+  - 48kHz / 24kHz 高音質 WAV ファイルの入出力およびメモリ上での非破壊エンコード。
+* **[SciPy](https://scipy.org/)** & **[NumPy](https://numpy.org/)**
+  - 音声信号処理、ハイパスフィルター・イコライザー（Corporate Clarity Boost）、ピッチシフト・タイムストレッチの算術処理。
+* **[pathvalidate](https://github.com/thombashi/pathvalidate)**
+  - エクスポートファイル名および文字コードの安全なサニタイズ処理。
+* **[Jinja2](https://jinja.palletsprojects.com/)**
+  - テンプレートレンダリングエンジン。
+* **[Remix Icon](https://remixicon.com/)**
+  - UIで使用されている高品質オープンソースアイコンシステム。
+
+---
+
+## 📜 ライセンス ＆ 免責事項 (License & Disclaimer)
+
+* **プロジェクトライセンス**: 本リポジトリのコードおよびUI構成は **[MIT License](https://opensource.org/licenses/MIT)** の下で公開されています。商用・個人利用を問わず自由にご利用・改変いただけます。
+* **各サードパーティライセンス遵守**: 使用している各ライブラリ（MIT / Apache 2.0 / BSD / Remix Icon License等）のライセンス条項に準拠して開発されています。
+* **商用利用に関する免責事項**: 音声合成（TTS）出力データおよび生成物の商用利用範囲については、ご使用になる環境・クラウドプロバイダーおよび参照音声の権利規定をご確認の上ご使用ください。
