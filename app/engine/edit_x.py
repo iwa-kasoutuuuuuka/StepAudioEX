@@ -16,6 +16,15 @@ class StepAudioEditX:
     pause insertion, equal-power crossfading, and audio enhancement filters.
     """
 
+    FILTER_PRESETS = {
+        'raw': {'highpass_freq': 20, 'lowpass_freq': 20000, 'eq_low_gain': 0, 'eq_mid_gain': 0, 'eq_high_gain': 0},
+        'podcast': {'highpass_freq': 120, 'lowpass_freq': 14000, 'eq_low_gain': 0, 'eq_mid_gain': 3, 'eq_high_gain': 2},
+        'classroom': {'highpass_freq': 100, 'lowpass_freq': 12000, 'eq_low_gain': 0, 'eq_mid_gain': 4, 'eq_high_gain': 1},
+        'conference': {'highpass_freq': 150, 'lowpass_freq': 10000, 'eq_low_gain': 0, 'eq_mid_gain': 5, 'eq_high_gain': 0},
+        'narration': {'highpass_freq': 80, 'lowpass_freq': 16000, 'eq_low_gain': -2, 'eq_mid_gain': 3, 'eq_high_gain': 3},
+        'voiceover_pro': {'highpass_freq': 100, 'lowpass_freq': 15000, 'eq_low_gain': -3, 'eq_mid_gain': 4, 'eq_high_gain': 4}
+    }
+
     @staticmethod
     def read_audio(file_path_or_bytes) -> Tuple[Any, int]:
         """
@@ -161,3 +170,78 @@ class StepAudioEditX:
             filtered = (filtered / max_peak) * 0.95
             
         return filtered.astype(np.float32)
+
+    def apply_filter_chain(self, audio: Any, samplerate: int, 
+                           highpass_freq: float = 80.0,
+                           lowpass_freq: float = 16000.0,
+                           eq_low_gain: float = 0.0,
+                           eq_mid_gain: float = 0.0,
+                           eq_high_gain: float = 0.0,
+                           eq_low_freq: float = 320.0,
+                           eq_mid_freq: float = 2500.0,
+                           eq_high_freq: float = 6000.0,
+                           normalize: bool = True) -> Any:
+        if not HAS_SCIPY: return audio
+        
+        filtered = audio.copy()
+        
+        if highpass_freq > 0:
+            sos_hp = signal.butter(4, highpass_freq, 'highpass', fs=samplerate, output='sos')
+            filtered = signal.sosfilt(sos_hp, filtered)
+            
+        if lowpass_freq < samplerate / 2.0:
+            sos_lp = signal.butter(4, lowpass_freq, 'lowpass', fs=samplerate, output='sos')
+            filtered = signal.sosfilt(sos_lp, filtered)
+            
+        if eq_mid_gain != 0.0:
+            A = 10 ** (eq_mid_gain / 40.0)
+            w0 = 2 * np.pi * eq_mid_freq / samplerate
+            alpha = np.sin(w0) / (2 * 1.0)
+            
+            b0 = 1 + alpha * A
+            b1 = -2 * np.cos(w0)
+            b2 = 1 - alpha * A
+            a0 = 1 + alpha / A
+            a1 = -2 * np.cos(w0)
+            a2 = 1 - alpha / A
+            
+            sos_mid = np.array([[b0/a0, b1/a0, b2/a0, 1.0, a1/a0, a2/a0]])
+            filtered = signal.sosfilt(sos_mid, filtered)
+            
+        if eq_low_gain != 0.0:
+            A = 10 ** (eq_low_gain / 40.0)
+            w0 = 2 * np.pi * eq_low_freq / samplerate
+            alpha = np.sin(w0) / 2 * np.sqrt(2.0)
+            
+            b0 = A * ((A+1) - (A-1)*np.cos(w0) + 2*np.sqrt(A)*alpha)
+            b1 = 2*A * ((A-1) - (A+1)*np.cos(w0))
+            b2 = A * ((A+1) - (A-1)*np.cos(w0) - 2*np.sqrt(A)*alpha)
+            a0 = (A+1) + (A-1)*np.cos(w0) + 2*np.sqrt(A)*alpha
+            a1 = -2 * ((A-1) + (A+1)*np.cos(w0))
+            a2 = (A+1) + (A-1)*np.cos(w0) - 2*np.sqrt(A)*alpha
+            
+            sos_low = np.array([[b0/a0, b1/a0, b2/a0, 1.0, a1/a0, a2/a0]])
+            filtered = signal.sosfilt(sos_low, filtered)
+            
+        if eq_high_gain != 0.0:
+            A = 10 ** (eq_high_gain / 40.0)
+            w0 = 2 * np.pi * eq_high_freq / samplerate
+            alpha = np.sin(w0) / 2 * np.sqrt(2.0)
+            
+            b0 = A * ((A+1) + (A-1)*np.cos(w0) + 2*np.sqrt(A)*alpha)
+            b1 = -2*A * ((A-1) + (A+1)*np.cos(w0))
+            b2 = A * ((A+1) + (A-1)*np.cos(w0) - 2*np.sqrt(A)*alpha)
+            a0 = (A+1) - (A-1)*np.cos(w0) + 2*np.sqrt(A)*alpha
+            a1 = 2 * ((A-1) - (A+1)*np.cos(w0))
+            a2 = (A+1) - (A-1)*np.cos(w0) - 2*np.sqrt(A)*alpha
+            
+            sos_high = np.array([[b0/a0, b1/a0, b2/a0, 1.0, a1/a0, a2/a0]])
+            filtered = signal.sosfilt(sos_high, filtered)
+            
+        if normalize:
+            max_val = np.max(np.abs(filtered))
+            if max_val > 1e-5:
+                filtered = filtered / max_val
+                
+        return filtered.astype(np.float32)
+

@@ -1,4 +1,13 @@
+/**
+ * WaveformVisualizer
+ * Provides interactive audio waveform bar display with playback scrub line.
+ * Supports mode switching between 'waveform' and 'spectrogram' views.
+ */
 class WaveformVisualizer {
+    /**
+     * @param {string} canvasId - The ID of the canvas element for waveform
+     * @param {string} audioPlayerId - The ID of the audio player element
+     */
     constructor(canvasId, audioPlayerId) {
         this.canvas = document.getElementById(canvasId);
         if (!this.canvas) return;
@@ -9,8 +18,66 @@ class WaveformVisualizer {
         this.selection = { start: 0, end: 0 };
         this.isSelecting = false;
 
+        /** @type {'waveform' | 'spectrogram'} */
+        this.currentMode = 'waveform';
+
+        /** @type {SpectrogramVisualizer|null} */
+        this.spectrogramVisualizer = null;
+
+        /** @type {string|null} */
+        this.spectrogramCanvasId = null;
+
         this.initResize();
         this.bindEvents();
+    }
+
+    /**
+     * Set the spectrogram canvas ID and lazily create the SpectrogramVisualizer.
+     * @param {string} canvasId - The ID of the spectrogram canvas element
+     */
+    setSpectrogramCanvas(canvasId) {
+        this.spectrogramCanvasId = canvasId;
+    }
+
+    /**
+     * Switch between 'waveform' and 'spectrogram' display modes.
+     * @param {'waveform' | 'spectrogram'} mode
+     */
+    setMode(mode) {
+        this.currentMode = mode;
+
+        const waveformCanvas = this.canvas;
+        const spectrogramCanvas = this.spectrogramCanvasId
+            ? document.getElementById(this.spectrogramCanvasId)
+            : null;
+
+        if (mode === 'spectrogram') {
+            // Show spectrogram, hide waveform
+            if (waveformCanvas) waveformCanvas.style.display = 'none';
+            if (spectrogramCanvas) spectrogramCanvas.style.display = 'block';
+
+            // Lazily create spectrogram visualizer
+            if (!this.spectrogramVisualizer && this.spectrogramCanvasId && window.SpectrogramVisualizer) {
+                this.spectrogramVisualizer = new SpectrogramVisualizer(
+                    this.spectrogramCanvasId,
+                    this.audioPlayer
+                );
+            }
+
+            if (this.spectrogramVisualizer) {
+                this.spectrogramVisualizer.connectAudioElement(this.audioPlayer);
+                this.spectrogramVisualizer.start();
+            }
+        } else {
+            // Show waveform, hide spectrogram
+            if (waveformCanvas) waveformCanvas.style.display = 'block';
+            if (spectrogramCanvas) spectrogramCanvas.style.display = 'none';
+
+            if (this.spectrogramVisualizer) {
+                this.spectrogramVisualizer.stop();
+            }
+            this.draw();
+        }
     }
 
     initResize() {
@@ -33,6 +100,13 @@ class WaveformVisualizer {
             this.audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
             this.computePeaks();
             this.draw();
+
+            // Also reload in spectrogram if active
+            if (this.spectrogramVisualizer && this.currentMode === 'spectrogram') {
+                this.spectrogramVisualizer.reset();
+                this.spectrogramVisualizer.connectAudioElement(this.audioPlayer);
+                this.spectrogramVisualizer.start();
+            }
         } catch (e) {
             console.error("Waveform load error:", e);
         }
@@ -57,6 +131,8 @@ class WaveformVisualizer {
 
     draw() {
         if (!this.canvas || !this.ctx) return;
+        if (this.currentMode !== 'waveform') return;
+
         const w = this.canvas.width;
         const h = this.canvas.height;
         const ctx = this.ctx;

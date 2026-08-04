@@ -43,6 +43,10 @@
                     <i class="ri-clapperboard-line"></i>
                     <span data-i18n="nav_studio">Video Script Studio</span>
                 </li>
+                <li class="nav-item" data-tab="processor">
+                    <i class="ri-equalizer-line"></i>
+                    <span data-i18n="nav_processor">Audio Processor</span>
+                </li>
             </ul>
 
             <div class="sidebar-footer">
@@ -128,12 +132,31 @@
 
                         <!-- Audio Waveform & Player -->
                         <div class="glass-panel waveform-card">
-                            <div class="panel-title" style="margin-bottom:8px;" data-i18n="waveform_title">
-                                <i class="ri-waveform-line"></i> Interactive Audio Waveform Visualizer
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <div class="panel-title" style="margin-bottom:0;" data-i18n="waveform_title">
+                                    <i class="ri-waveform-line"></i> Interactive Audio Waveform Visualizer
+                                </div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div class="visualizer-mode-toggle">
+                                        <button class="viz-mode-btn active" data-viz-mode="waveform">
+                                            <i class="ri-bar-chart-line"></i> <span data-i18n="viz_waveform">Waveform</span>
+                                        </button>
+                                        <button class="viz-mode-btn" data-viz-mode="spectrogram">
+                                            <i class="ri-fire-line"></i> <span data-i18n="viz_spectrogram">Spectrogram</span>
+                                        </button>
+                                    </div>
+                                    <select id="fftSizeSelect" class="fft-size-select" title="FFT Size">
+                                        <option value="256">FFT 256</option>
+                                        <option value="512">FFT 512</option>
+                                        <option value="1024" selected>FFT 1024</option>
+                                        <option value="2048">FFT 2048</option>
+                                    </select>
+                                </div>
                             </div>
                             
                             <div class="waveform-canvas-container">
                                 <canvas id="waveformCanvas"></canvas>
+                                <canvas id="spectrogramCanvas" style="display:none;"></canvas>
                             </div>
 
                             <div class="player-controls-bar">
@@ -384,11 +407,159 @@
                     </div>
                 </div>
             </section>
+
+            <!-- TAB 5: AUDIO PROCESSOR -->
+            <section id="tab-processor" class="tab-panel">
+                <div class="processor-grid">
+                    <!-- Left: Batch Processor -->
+                    <div class="glass-panel">
+                        <div class="panel-title" data-i18n="batch_title">
+                            <i class="ri-stack-line"></i> Batch Audio Processor
+                        </div>
+                        <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;" data-i18n="batch_desc">
+                            Drag & drop multiple audio or text files for batch TTS synthesis and audio enhancement.
+                        </p>
+
+                        <div id="batchDropZone" class="batch-drop-zone">
+                            <div class="batch-drop-icon"><i class="ri-upload-cloud-2-line"></i></div>
+                            <div class="batch-drop-text" data-i18n="batch_drop_text">Drop audio or text files here</div>
+                            <div class="batch-drop-hint">.wav, .mp3, .ogg, .flac, .txt, .md, .srt, .vtt</div>
+                            <input type="file" id="batchFileInput" multiple accept=".wav,.mp3,.ogg,.flac,.m4a,.txt,.md,.srt,.vtt,.csv" style="display:none;">
+                        </div>
+
+                        <div style="margin-top:16px;">
+                            <div class="batch-actions-bar">
+                                <div class="batch-stats">
+                                    <span class="batch-stat-item"><span class="batch-stat-dot" style="background:#cbd5e1;"></span> <span id="batchStatTotal">0</span> <span data-i18n="batch_total">files</span></span>
+                                    <span class="batch-stat-item"><span class="batch-stat-dot" style="background:var(--primary);"></span> <span id="batchStatProcessing">0</span> <span data-i18n="batch_processing_label">processing</span></span>
+                                    <span class="batch-stat-item"><span class="batch-stat-dot" style="background:var(--accent-emerald);"></span> <span id="batchStatComplete">0</span> <span data-i18n="batch_complete_label">done</span></span>
+                                </div>
+                                <div style="display:flex; gap:8px;">
+                                    <button id="btnBatchProcess" class="btn-primary" style="padding:10px 18px; font-size:13px;" data-i18n="btn_batch_process">
+                                        <i class="ri-play-circle-line"></i> Process All
+                                    </button>
+                                    <button id="btnBatchDownload" class="btn-secondary" style="padding:8px 14px; font-size:12px;" data-i18n="btn_batch_download">
+                                        <i class="ri-file-zip-line"></i> Download ZIP
+                                    </button>
+                                    <button id="btnBatchClear" class="btn-secondary" style="padding:8px 14px; font-size:12px;" data-i18n="btn_batch_clear">
+                                        <i class="ri-delete-bin-line"></i> Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="batchFileList" class="batch-file-list" style="margin-top:16px;"></div>
+                    </div>
+
+                    <!-- Right: Audio Filter Chain -->
+                    <div class="glass-panel">
+                        <div class="panel-title" data-i18n="filter_title">
+                            <i class="ri-equalizer-line"></i> Audio Filter & EQ Chain
+                        </div>
+                        <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;" data-i18n="filter_desc">
+                            Apply noise cancellation, EQ, and compression presets to your audio files.
+                        </p>
+
+                        <!-- Target File -->
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="filter_target_file">Target Audio File</label>
+                            <input type="text" id="filterFileRef" class="form-input" readonly placeholder="Generate or select an audio file first">
+                        </div>
+
+                        <!-- Presets -->
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="filter_preset_label">Filter Preset</label>
+                            <div id="filterPresetsGrid" class="filter-presets-grid">
+                                <div class="filter-preset-card active" data-preset="raw">
+                                    <span class="filter-preset-icon">🎚️</span>
+                                    <div class="filter-preset-name">Raw</div>
+                                    <div class="filter-preset-desc" data-i18n="preset_raw_desc">No filtering</div>
+                                </div>
+                                <div class="filter-preset-card" data-preset="podcast">
+                                    <span class="filter-preset-icon">🎙️</span>
+                                    <div class="filter-preset-name" data-i18n="preset_podcast">Podcast</div>
+                                    <div class="filter-preset-desc" data-i18n="preset_podcast_desc">Warm vocal</div>
+                                </div>
+                                <div class="filter-preset-card" data-preset="classroom">
+                                    <span class="filter-preset-icon">🏫</span>
+                                    <div class="filter-preset-name" data-i18n="preset_classroom">Classroom</div>
+                                    <div class="filter-preset-desc" data-i18n="preset_classroom_desc">Clear speech</div>
+                                </div>
+                                <div class="filter-preset-card" data-preset="conference">
+                                    <span class="filter-preset-icon">🏢</span>
+                                    <div class="filter-preset-name" data-i18n="preset_conference">Conference</div>
+                                    <div class="filter-preset-desc" data-i18n="preset_conf_desc">Room noise cut</div>
+                                </div>
+                                <div class="filter-preset-card" data-preset="narration">
+                                    <span class="filter-preset-icon">📖</span>
+                                    <div class="filter-preset-name" data-i18n="preset_narration">Narration</div>
+                                    <div class="filter-preset-desc" data-i18n="preset_narr_desc">Balanced</div>
+                                </div>
+                                <div class="filter-preset-card" data-preset="voiceover_pro">
+                                    <span class="filter-preset-icon">🎬</span>
+                                    <div class="filter-preset-name" data-i18n="preset_voiceover">Voiceover Pro</div>
+                                    <div class="filter-preset-desc" data-i18n="preset_vo_desc">Broadcast quality</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- EQ Controls -->
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="eq_controls_label">3-Band Equalizer</label>
+                            <div class="eq-controls-grid">
+                                <div class="eq-band-control">
+                                    <span class="eq-band-label">LOW</span>
+                                    <span class="eq-band-value" id="eqLowVal">0 dB</span>
+                                    <input type="range" class="eq-band-slider" id="eqLowSlider" min="-12" max="12" value="0" step="1">
+                                    <span class="eq-band-freq">320 Hz</span>
+                                </div>
+                                <div class="eq-band-control">
+                                    <span class="eq-band-label">MID</span>
+                                    <span class="eq-band-value" id="eqMidVal">0 dB</span>
+                                    <input type="range" class="eq-band-slider" id="eqMidSlider" min="-12" max="12" value="0" step="1">
+                                    <span class="eq-band-freq">2.5 kHz</span>
+                                </div>
+                                <div class="eq-band-control">
+                                    <span class="eq-band-label">HIGH</span>
+                                    <span class="eq-band-value" id="eqHighVal">0 dB</span>
+                                    <input type="range" class="eq-band-slider" id="eqHighSlider" min="-12" max="12" value="0" step="1">
+                                    <span class="eq-band-freq">6 kHz</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Controls -->
+                        <div class="filter-advanced-row" style="margin-bottom:16px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" data-i18n="filter_highpass_label">Highpass Cutoff (Hz)</label>
+                                <input type="number" id="filterHighpassFreq" class="form-input" value="80" min="20" max="500" step="10">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" data-i18n="filter_lowpass_label">Lowpass Cutoff (Hz)</label>
+                                <input type="number" id="filterLowpassFreq" class="form-input" value="16000" min="4000" max="22000" step="500">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label class="bypass-toggle">
+                                <input type="checkbox" id="filterBypassToggle">
+                                <span data-i18n="filter_bypass_label">Bypass Filters (Preview Raw)</span>
+                            </label>
+                            <button id="btnApplyFilter" class="btn-primary" style="padding:10px 20px; font-size:13px;" data-i18n="btn_apply_filter">
+                                <i class="ri-equalizer-line"></i> Apply Filter Chain
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
     <!-- Application Controller JS -->
     <script src="/static/js/audio_waveform.js"></script>
-    <script src="/static/js/app.js?v=2.4.0"></script>
+    <script src="/static/js/spectrogram.js"></script>
+    <script src="/static/js/audio_filters.js"></script>
+    <script src="/static/js/batch_processor.js"></script>
+    <script src="/static/js/app.js?v=3.0.0"></script>
 </body>
 </html>

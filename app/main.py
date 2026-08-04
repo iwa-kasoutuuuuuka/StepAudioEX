@@ -1,5 +1,6 @@
 import os
 import shutil
+import zipfile
 import numpy as np
 import soundfile as sf
 from fastapi import FastAPI, Request, File, UploadFile, Form, HTTPException
@@ -80,6 +81,18 @@ class SceneItem(BaseModel):
 class StudioRenderRequest(BaseModel):
     project_name: str
     scenes: List[SceneItem]
+
+class FilterRequest(BaseModel):
+    file_name: str
+    preset: Optional[str] = None  # 'podcast', 'classroom', 'conference', 'narration', 'voiceover_pro', 'raw'
+    highpass_freq: Optional[float] = 80.0
+    lowpass_freq: Optional[float] = 16000.0
+    eq_low_gain: Optional[float] = 0.0
+    eq_mid_gain: Optional[float] = 0.0
+    eq_high_gain: Optional[float] = 0.0
+
+class BatchDownloadRequest(BaseModel):
+    file_names: List[str]
 
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, Response
 
@@ -323,3 +336,130 @@ async def render_studio_scenes(req: StudioRenderRequest):
         "srt_content": srt_content,
         "vtt_content": vtt_content
     }
+
+@app.post("/api/filters/apply")
+async def apply_filter(req: FilterRequest):
+    """Apply filter chain to an audio file."""
+    input_file_path = os.path.join(OUTPUTS_DIR, req.file_name)
+    if not os.path.exists(input_file_path):
+        raise HTTPException(status_code=404, detail="Input audio file not found.")
+
+    audio_data, sr = edit_x.read_audio(input_file_path)
+
+    if req.preset and req.preset in edit_x.FILTER_PRESETS:
+        params = edit_x.FILTER_PRESETS[req.preset]
+        filtered_audio = edit_x.apply_filter_chain(
+            audio=audio_data, 
+            samplerate=sr,
+            highpass_freq=params.get('highpass_freq', 80.0),
+            lowpass_freq=params.get('lowpass_freq', 16000.0),
+            eq_low_gain=params.get('eq_low_gain', 0.0),
+            eq_mid_gain=params.get('eq_mid_gain', 0.0),
+            eq_high_gain=params.get('eq_high_gain', 0.0)
+        )
+        preset_name = req.preset
+    else:
+        filtered_audio = edit_x.apply_filter_chain(
+            audio=audio_data,
+            samplerate=sr,
+            highpass_freq=req.highpass_freq,
+            lowpass_freq=req.lowpass_freq,
+            eq_low_gain=req.eq_low_gain,
+            eq_mid_gain=req.eq_mid_gain,
+            eq_high_gain=req.eq_high_gain
+        )
+        preset_name = "custom"
+
+    output_filename = f"filtered_{preset_name}_{req.file_name}"
+    output_path = os.path.join(OUTPUTS_DIR, output_filename)
+    edit_x.save_audio(filtered_audio, sr, output_path)
+
+    duration = float(len(filtered_audio) / sr)
+
+    return {
+        "status": "success",
+        "audio_url": f"/outputs/{output_filename}",
+        "file_name": output_filename,
+        "duration": round(duration, 2),
+        "sample_rate": sr
+    }
+
+@app.get("/api/filters/presets")
+async def get_filter_presets():
+    """Return available filter presets."""
+    return {
+        "status": "success",
+        "presets": edit_x.FILTER_PRESETS
+    }
+
+@app.post("/api/batch/process")
+async def batch_process(
+    files: List[UploadFile] = File(...),
+    voice_id: str = Form("en-US-AvaMultilingualNeural"),
+    pitch: str = Form("+0%"),
+    rate: str = Form("+0%"),
+    emotion: str = Form("professional"),
+    clarity_boost: bool = Form(True)
+):
+    """Accept multiple files for batch processing."""
+    results = []
+    
+    for file in files:
+        content = await file.read()
+        
+        if file.filename.endswith(".txt"):
+            text_content = content.decode("utf-8")
+            res = await master_engine.generate_full_script_async(
+                script_text=text_content,
+                voice_id=voice_id,
+                pitch=pitch,
+                rate=rate,
+                emotion=emotion,
+                clarity_boost=clarity_boost
+            )
+            results.append({
+                "filename": res["file_name"],
+                "audio_url": f"/outputs/{res['file_name']}",
+                "duration": res["duration"]
+            })
+            
+        elif file.filename.endswith((".wav", ".mp3", ".m4a", ".ogg", ".flac")):
+            upload_path = os.path.join(UPLOADS_DIR, file.filename)
+            with open(upload_path, "wb") as f:
+                f.write(content)
+                
+            audio_data, sr = edit_x.read_audio(upload_path)
+            enhanced = edit_x.enhance_corporate_audio(audio_data, sr, clarity_boost=clarity_boost)
+            
+            out_name = f"batch_enhanced_{file.filename}"
+            out_path = os.path.join(OUTPUTS_DIR, out_name)
+            edit_x.save_audio(enhanced, sr, out_path)
+            
+            results.append({
+                "filename": out_name,
+                "audio_url": f"/outputs/{out_name}",
+                "duration": round(len(enhanced) / sr, 2)
+            })
+            
+    return {
+        "status": "success",
+        "results": results
+    }
+
+@app.post("/api/batch/download-zip")
+async def download_zip(req: BatchDownloadRequest):
+    """Package completed files into ZIP."""
+    if not req.file_names:
+        raise HTTPException(status_code=400, detail="No files specified.")
+        
+    zip_filename = "batch_download.zip"
+    zip_path = os.path.join(OUTPUTS_DIR, zip_filename)
+    
+    with zipfile.ZipFile(zip_path, 'w') as zf:
+        for fname in req.file_names:
+            fpath = os.path.join(OUTPUTS_DIR, fname)
+            if os.path.exists(fpath):
+                zf.write(fpath, arcname=fname)
+                
+    return FileResponse(zip_path, media_type="application/zip", filename=zip_filename)
+

@@ -67,7 +67,39 @@ document.addEventListener('DOMContentLoaded', () => {
             filter_all: "All Voices",
             filter_female: "Female Voices",
             filter_male: "Male Voices",
-            filter_clone: "Custom Cloned"
+            filter_clone: "Custom Cloned",
+            nav_processor: "Audio Processor",
+            viz_waveform: "Waveform",
+            viz_spectrogram: "Spectrogram",
+            batch_title: '<i class="ri-stack-line"></i> Batch Audio Processor',
+            batch_desc: "Drag & drop multiple audio or text files for batch TTS synthesis and audio enhancement.",
+            batch_drop_text: "Drop audio or text files here",
+            batch_total: "files",
+            batch_processing_label: "processing",
+            batch_complete_label: "done",
+            btn_batch_process: '<i class="ri-play-circle-line"></i> Process All',
+            btn_batch_download: '<i class="ri-file-zip-line"></i> Download ZIP',
+            btn_batch_clear: '<i class="ri-delete-bin-line"></i> Clear',
+            filter_title: '<i class="ri-equalizer-line"></i> Audio Filter & EQ Chain',
+            filter_desc: "Apply noise cancellation, EQ, and compression presets to your audio files.",
+            filter_target_file: "Target Audio File",
+            filter_preset_label: "Filter Preset",
+            preset_raw_desc: "No filtering",
+            preset_podcast: "Podcast",
+            preset_podcast_desc: "Warm vocal",
+            preset_classroom: "Classroom",
+            preset_classroom_desc: "Clear speech",
+            preset_conference: "Conference",
+            preset_conf_desc: "Room noise cut",
+            preset_narration: "Narration",
+            preset_narr_desc: "Balanced",
+            preset_voiceover: "Voiceover Pro",
+            preset_vo_desc: "Broadcast quality",
+            eq_controls_label: "3-Band Equalizer",
+            filter_highpass_label: "Highpass Cutoff (Hz)",
+            filter_lowpass_label: "Lowpass Cutoff (Hz)",
+            filter_bypass_label: "Bypass Filters (Preview Raw)",
+            btn_apply_filter: '<i class="ri-equalizer-line"></i> Apply Filter Chain'
         },
         ja: {
             page_title: "企業・教育向け 英語音声合成＆編集スタジオ",
@@ -137,7 +169,39 @@ document.addEventListener('DOMContentLoaded', () => {
             filter_male: "男性ナレーター",
             filter_clone: "オリジナル (クローン)",
             mode_cloud: "🌐 クラウド高速",
-            mode_local: "🏠 完全ローカル (オフライン)"
+            mode_local: "🏠 完全ローカル (オフライン)",
+            nav_processor: "オーディオ加工",
+            viz_waveform: "波形",
+            viz_spectrogram: "スペクトログラム",
+            batch_title: '<i class="ri-stack-line"></i> バッチ一括音声処理',
+            batch_desc: "複数の音声ファイルやテキストファイルをドラッグ＆ドロップして一括変換・TTS合成します。",
+            batch_drop_text: "音声またはテキストファイルをここにドロップ",
+            batch_total: "ファイル",
+            batch_processing_label: "処理中",
+            batch_complete_label: "完了",
+            btn_batch_process: '<i class="ri-play-circle-line"></i> 一括処理開始',
+            btn_batch_download: '<i class="ri-file-zip-line"></i> ZIP一括DL',
+            btn_batch_clear: '<i class="ri-delete-bin-line"></i> クリア',
+            filter_title: '<i class="ri-equalizer-line"></i> 音声フィルター＆EQチェーン',
+            filter_desc: "ノイズキャンセリング、イコライザー、コンプレッサーのプリセットを音声ファイルに適用します。",
+            filter_target_file: "対象音声ファイル",
+            filter_preset_label: "フィルタープリセット",
+            preset_raw_desc: "フィルターなし",
+            preset_podcast: "ポッドキャスト",
+            preset_podcast_desc: "温かみのある音声",
+            preset_classroom: "教室・講義",
+            preset_classroom_desc: "クリアな発話",
+            preset_conference: "会議室",
+            preset_conf_desc: "室内ノイズ除去",
+            preset_narration: "ナレーション",
+            preset_narr_desc: "バランス型",
+            preset_voiceover: "ボイスオーバーPro",
+            preset_vo_desc: "放送品質",
+            eq_controls_label: "3バンド イコライザー",
+            filter_highpass_label: "ハイパスカットオフ (Hz)",
+            filter_lowpass_label: "ローパスカットオフ (Hz)",
+            filter_bypass_label: "フィルターバイパス (原音プレビュー)",
+            btn_apply_filter: '<i class="ri-equalizer-line"></i> フィルターチェーンを適用'
         },
         en: {
             mode_cloud: "🌐 Cloud High-Speed",
@@ -1023,4 +1087,370 @@ document.addEventListener('DOMContentLoaded', () => {
         element.click();
         document.body.removeChild(element);
     }
+
+    // ============================================
+    // NEW: SPECTROGRAM / WAVEFORM MODE TOGGLE
+    // ============================================
+    visualizer.setSpectrogramCanvas('spectrogramCanvas');
+
+    document.querySelectorAll('.viz-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mode = btn.getAttribute('data-viz-mode');
+            document.querySelectorAll('.viz-mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            visualizer.setMode(mode);
+        });
+    });
+
+    const fftSizeSelect = document.getElementById('fftSizeSelect');
+    if (fftSizeSelect) {
+        fftSizeSelect.addEventListener('change', () => {
+            const size = parseInt(fftSizeSelect.value, 10);
+            if (visualizer.spectrogramVisualizer) {
+                visualizer.spectrogramVisualizer.setFFTSize(size);
+            }
+        });
+    }
+
+    // ============================================
+    // NEW: FILTER PRESET & EQ CONTROLS
+    // ============================================
+    let currentFilterPreset = 'raw';
+    let filterChain = null;
+
+    // Filter preset card selection
+    document.querySelectorAll('.filter-preset-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.filter-preset-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            currentFilterPreset = card.getAttribute('data-preset');
+
+            // Update EQ sliders based on preset
+            const presetMap = {
+                'raw': { low: 0, mid: 0, high: 0, hp: 20, lp: 20000 },
+                'podcast': { low: 0, mid: 3, high: 2, hp: 120, lp: 14000 },
+                'classroom': { low: 0, mid: 4, high: 1, hp: 100, lp: 12000 },
+                'conference': { low: 0, mid: 5, high: 0, hp: 150, lp: 10000 },
+                'narration': { low: -2, mid: 3, high: 3, hp: 80, lp: 16000 },
+                'voiceover_pro': { low: -3, mid: 4, high: 4, hp: 100, lp: 15000 }
+            };
+            const preset = presetMap[currentFilterPreset] || presetMap['raw'];
+            document.getElementById('eqLowSlider').value = preset.low;
+            document.getElementById('eqMidSlider').value = preset.mid;
+            document.getElementById('eqHighSlider').value = preset.high;
+            document.getElementById('eqLowVal').textContent = `${preset.low} dB`;
+            document.getElementById('eqMidVal').textContent = `${preset.mid} dB`;
+            document.getElementById('eqHighVal').textContent = `${preset.high} dB`;
+            document.getElementById('filterHighpassFreq').value = preset.hp;
+            document.getElementById('filterLowpassFreq').value = preset.lp;
+
+            // Apply to real-time filter chain if active
+            if (filterChain && !filterChain.bypassed) {
+                filterChain.applyPreset(currentFilterPreset);
+            }
+        });
+    });
+
+    // EQ slider value display
+    ['eqLowSlider', 'eqMidSlider', 'eqHighSlider'].forEach(id => {
+        const slider = document.getElementById(id);
+        const valId = id.replace('Slider', 'Val');
+        if (slider) {
+            slider.addEventListener('input', () => {
+                document.getElementById(valId).textContent = `${slider.value} dB`;
+            });
+        }
+    });
+
+    // Filter bypass toggle
+    const filterBypassToggle = document.getElementById('filterBypassToggle');
+    if (filterBypassToggle) {
+        filterBypassToggle.addEventListener('change', () => {
+            if (filterChain) {
+                filterChain.bypass(filterBypassToggle.checked);
+            }
+        });
+    }
+
+    // Apply Filter Chain button
+    const btnApplyFilter = document.getElementById('btnApplyFilter');
+    if (btnApplyFilter) {
+        btnApplyFilter.addEventListener('click', async () => {
+            const filterFileRef = document.getElementById('filterFileRef');
+            const fileName = filterFileRef ? filterFileRef.value : '';
+            if (!fileName) {
+                alert(currentLang === 'ja' ? '音声ファイルを先に生成してください。' : 'Please generate an audio file first.');
+                return;
+            }
+
+            setButtonLoading(btnApplyFilter, true, currentLang === 'ja' ? 'フィルター適用中...' : 'Applying Filters...');
+
+            try {
+                const payload = {
+                    file_name: fileName,
+                    preset: currentFilterPreset !== 'raw' ? currentFilterPreset : null,
+                    highpass_freq: parseFloat(document.getElementById('filterHighpassFreq').value || 80),
+                    lowpass_freq: parseFloat(document.getElementById('filterLowpassFreq').value || 16000),
+                    eq_low_gain: parseFloat(document.getElementById('eqLowSlider').value || 0),
+                    eq_mid_gain: parseFloat(document.getElementById('eqMidSlider').value || 0),
+                    eq_high_gain: parseFloat(document.getElementById('eqHighSlider').value || 0)
+                };
+
+                const response = await fetch('/api/filters/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    currentAudioFile = data.file_name;
+                    mainAudioPlayer.src = data.audio_url;
+                    mainAudioPlayer.play();
+                    updatePlayPauseIcon(true);
+                    visualizer.loadAudio(data.audio_url);
+                    document.getElementById('editXFileRef').value = data.file_name;
+                    filterFileRef.value = data.file_name;
+                    alert(currentLang === 'ja'
+                        ? `フィルター「${currentFilterPreset}」を適用しました (${data.duration}秒)`
+                        : `Filter "${currentFilterPreset}" applied successfully (${data.duration}s)`);
+                } else {
+                    alert(`Filter Error: ${data.detail || 'Failed'}`);
+                }
+            } catch (e) {
+                console.error('Filter apply error:', e);
+                alert('Network error during filter application.');
+            } finally {
+                setButtonLoading(btnApplyFilter, false, i18n[currentLang].btn_apply_filter || 'Apply Filter Chain');
+            }
+        });
+    }
+
+    // ============================================
+    // NEW: BATCH PROCESSOR UI
+    // ============================================
+    const batchDropZone = document.getElementById('batchDropZone');
+    const batchFileInput = document.getElementById('batchFileInput');
+    const batchFileList = document.getElementById('batchFileList');
+    let batchFiles = [];
+
+    if (batchDropZone) {
+        // Click to open file picker
+        batchDropZone.addEventListener('click', () => {
+            if (batchFileInput) batchFileInput.click();
+        });
+
+        // File input change
+        if (batchFileInput) {
+            batchFileInput.addEventListener('change', () => {
+                if (batchFileInput.files.length > 0) {
+                    addBatchFiles(batchFileInput.files);
+                }
+            });
+        }
+
+        // Drag & Drop
+        ['dragenter', 'dragover'].forEach(ev => {
+            batchDropZone.addEventListener(ev, e => {
+                e.preventDefault();
+                e.stopPropagation();
+                batchDropZone.classList.add('dragover');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(ev => {
+            batchDropZone.addEventListener(ev, e => {
+                e.preventDefault();
+                e.stopPropagation();
+                batchDropZone.classList.remove('dragover');
+            });
+        });
+
+        batchDropZone.addEventListener('drop', e => {
+            if (e.dataTransfer.files.length > 0) {
+                addBatchFiles(e.dataTransfer.files);
+            }
+        });
+    }
+
+    function addBatchFiles(fileList) {
+        for (let i = 0; i < fileList.length; i++) {
+            batchFiles.push({
+                file: fileList[i],
+                status: 'queued',
+                result: null
+            });
+        }
+        renderBatchFileList();
+        updateBatchStats();
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function renderBatchFileList() {
+        if (!batchFileList) return;
+        batchFileList.innerHTML = '';
+        if (batchFiles.length === 0) return;
+
+        batchFiles.forEach((item, idx) => {
+            const isAudio = /\.(wav|mp3|ogg|flac|m4a)$/i.test(item.file.name);
+            const icon = isAudio ? 'ri-file-music-line' : 'ri-file-text-line';
+            const statusColors = { queued: '#cbd5e1', processing: '#00f2fe', complete: '#10b981', error: '#ef4444' };
+            const statusLabels = { queued: '⏳', processing: '⚡', complete: '✅', error: '❌' };
+
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; gap:12px; padding:10px 14px; background:var(--bg-card); border:1px solid var(--border-glass); border-radius:10px;';
+            row.innerHTML = `
+                <i class="${icon}" style="font-size:18px; color:${isAudio ? 'var(--primary)' : 'var(--accent-purple)'};"></i>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.file.name}</div>
+                    <div style="font-size:10px; color:var(--text-muted);">${formatFileSize(item.file.size)} · ${isAudio ? 'Audio' : 'Text'}</div>
+                </div>
+                <span style="font-size:12px; color:${statusColors[item.status]};">${statusLabels[item.status]}</span>
+                ${item.status === 'processing' ? '<i class="ri-loader-4-line spin" style="color:var(--primary);"></i>' : ''}
+                ${item.status === 'complete' && item.result ? `<a href="${item.result.audio_url}" download class="btn-secondary" style="padding:4px 8px; font-size:11px;"><i class="ri-download-line"></i></a>` : ''}
+            `;
+            batchFileList.appendChild(row);
+        });
+    }
+
+    function updateBatchStats() {
+        const total = batchFiles.length;
+        const processing = batchFiles.filter(f => f.status === 'processing').length;
+        const complete = batchFiles.filter(f => f.status === 'complete').length;
+        const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+        el('batchStatTotal', total);
+        el('batchStatProcessing', processing);
+        el('batchStatComplete', complete);
+    }
+
+    // Process All button
+    const btnBatchProcess = document.getElementById('btnBatchProcess');
+    if (btnBatchProcess) {
+        btnBatchProcess.addEventListener('click', async () => {
+            const pending = batchFiles.filter(f => f.status === 'queued');
+            if (pending.length === 0) {
+                alert(currentLang === 'ja' ? '処理するファイルがありません。' : 'No files to process.');
+                return;
+            }
+
+            setButtonLoading(btnBatchProcess, true, currentLang === 'ja' ? '一括処理中...' : 'Processing...');
+
+            // Process files sequentially for simplicity
+            for (const item of pending) {
+                item.status = 'processing';
+                renderBatchFileList();
+                updateBatchStats();
+
+                try {
+                    const isAudio = /\.(wav|mp3|ogg|flac|m4a)$/i.test(item.file.name);
+
+                    if (isAudio) {
+                        // Upload audio for enhancement
+                        const formData = new FormData();
+                        formData.append('files', item.file);
+                        formData.append('clarity_boost', 'true');
+                        const res = await fetch('/api/batch/process', { method: 'POST', body: formData });
+                        const data = await res.json();
+                        if (data.status === 'success' && data.results.length > 0) {
+                            item.status = 'complete';
+                            item.result = data.results[0];
+                        } else {
+                            item.status = 'error';
+                        }
+                    } else {
+                        // Read text and synthesize
+                        const text = await item.file.text();
+                        const res = await fetch('/api/tts/generate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                text: text,
+                                voice_id: currentVoiceId,
+                                pitch: `${document.getElementById('pitchSlider').value >= 0 ? '+' : ''}${document.getElementById('pitchSlider').value}%`,
+                                rate: `${document.getElementById('rateSlider').value >= 0 ? '+' : ''}${document.getElementById('rateSlider').value}%`,
+                                emotion: document.getElementById('emotionSelect').value,
+                                clarity_boost: document.getElementById('clarityToggle').checked,
+                                engine_mode: currentEngineMode
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            item.status = 'complete';
+                            item.result = { audio_url: data.audio_url, filename: data.file_name, duration: data.duration };
+                        } else {
+                            item.status = 'error';
+                        }
+                    }
+                } catch (e) {
+                    console.error('Batch processing error:', e);
+                    item.status = 'error';
+                }
+
+                renderBatchFileList();
+                updateBatchStats();
+            }
+
+            setButtonLoading(btnBatchProcess, false, i18n[currentLang].btn_batch_process || 'Process All');
+        });
+    }
+
+    // Download ZIP button
+    const btnBatchDownload = document.getElementById('btnBatchDownload');
+    if (btnBatchDownload) {
+        btnBatchDownload.addEventListener('click', async () => {
+            const completed = batchFiles.filter(f => f.status === 'complete' && f.result);
+            if (completed.length === 0) {
+                alert(currentLang === 'ja' ? '完了したファイルがありません。' : 'No completed files to download.');
+                return;
+            }
+
+            setButtonLoading(btnBatchDownload, true, 'Creating ZIP...');
+            try {
+                const fileNames = completed.map(f => f.result.filename || f.result.file_name);
+                const res = await fetch('/api/batch/download-zip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_names: fileNames })
+                });
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'batch_download.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                console.error('ZIP download error:', e);
+            } finally {
+                setButtonLoading(btnBatchDownload, false, i18n[currentLang].btn_batch_download || 'Download ZIP');
+            }
+        });
+    }
+
+    // Clear button
+    const btnBatchClear = document.getElementById('btnBatchClear');
+    if (btnBatchClear) {
+        btnBatchClear.addEventListener('click', () => {
+            batchFiles = [];
+            renderBatchFileList();
+            updateBatchStats();
+        });
+    }
+
+    // Sync filter file ref when TTS generates
+    const origGenClick = btnGenerateTTS.onclick;
+    mainAudioPlayer.addEventListener('loadeddata', () => {
+        const filterFileRef = document.getElementById('filterFileRef');
+        if (filterFileRef && currentAudioFile) {
+            filterFileRef.value = currentAudioFile;
+        }
+    });
+
 });
